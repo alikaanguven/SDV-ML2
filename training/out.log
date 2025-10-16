@@ -1,0 +1,342 @@
+Initialize iterable dataset
+nWorkers:  6
+Initialize iterable dataset
+nWorkers:  6
+Initialize iterable dataset
+nWorkers:  1
+__iter__ is called.
+[neptune] [info   ] Neptune initialized. Open in the app: https://app.neptune.ai/alikaan.guven/ParT/e/PART-496
+heads_share_params? False
+CPU count:  28
+Total params        : 1,509,714
+  Trainable         : 1,509,714
+    • weights       : 1,197,932
+    • biases        : 13,622
+  Non-trainable     : 0
+
+Epoch  0
+Starting train...
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [validation]
+Epoch  1
+Starting train...
+__iter__ is called.__iter__ is called.
+__iter__ is called.
+
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [validation]
+Epoch  2
+Starting train...
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.__iter__ is called.
+
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [validation]
+Epoch  3
+Starting train...
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.__iter__ is called.
+__iter__ is called.
+
+Started batch processes. [train]
+[neptune] [warning] Experiencing connection interruptions. Will try to reestablish communication with Neptune. Internal exception was: HTTPServiceUnavailable
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [validation]
+[neptune] [info   ] Communication with Neptune restored!
+Epoch  4
+Starting train...
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [validation]
+Epoch  5
+Starting train...
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.__iter__ is called.
+__iter__ is called.
+
+__iter__ is called.
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.__iter__ is called.
+
+__iter__ is called.__iter__ is called.
+__iter__ is called.
+
+__iter__ is called.
+Started batch processes. [validation]
+Epoch  6
+Starting train...
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.
+__iter__ is called.__iter__ is called.
+
+__iter__ is called.__iter__ is called.
+
+__iter__ is called.
+Started batch processes. [validation]
+Epoch  7
+Starting train...
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.__iter__ is called.
+__iter__ is called.
+
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [validation]
+Epoch  8
+Starting train...
+__iter__ is called.
+__iter__ is called.__iter__ is called.
+
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.__iter__ is called.
+
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [validation]
+Epoch  9
+Starting train...
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.__iter__ is called.__iter__ is called.
+
+
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.__iter__ is called.
+
+__iter__ is called.
+__iter__ is called.__iter__ is called.
+__iter__ is called.
+
+Started batch processes. [validation]
+Epoch  10
+Starting train...
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.__iter__ is called.
+
+__iter__ is called.
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.__iter__ is called.
+
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.__iter__ is called.
+
+Started batch processes. [validation]
+Epoch  11
+Starting train...
+__iter__ is called.
+__iter__ is called.__iter__ is called.
+
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.__iter__ is called.
+
+Started batch processes. [validation]
+Epoch  12
+Starting train...
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.__iter__ is called.
+
+__iter__ is called.__iter__ is called.
+
+Started batch processes. [validation]
+Epoch  13
+Starting train...
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.
+__iter__ is called.__iter__ is called.__iter__ is called.
+
+
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [validation]
+Epoch  14
+Starting train...
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+__iter__ is called.
+Started batch processes. [validation]
+Epoch  15
+Starting train...
+__iter__ is called.
+__iter__ is called.__iter__ is called.
+
+__iter__ is called.__iter__ is called.
+
+__iter__ is called.
+Started batch processes. [train]
