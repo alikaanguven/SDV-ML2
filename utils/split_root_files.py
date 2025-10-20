@@ -25,6 +25,8 @@ def main():
     p.add_argument("--chunk", type=int, required=True, help="Chunk size (events per output file).")
     p.add_argument("--outdir", required=True, help="Directory to write split files.")
     p.add_argument("--tree", default="Events", help="TTree name (default: Events).")
+    p.add_argument("--maxchunks", type=int, default=1000000, help="Max chunks to process per input file (default: million).")
+    p.add_argument("--maxfiles", type=int, default=1000000, help="Max files to process (default: million).")
     p.add_argument("--compression", type=int, default=1, help="ROOT compression 0..9 (default: 1).")
     args = p.parse_args()
 
@@ -86,6 +88,13 @@ def main():
 
             start += take
             part  += 1
+            if part >= args.maxchunks:
+                print(f"[info] reached maxchunks limit ({args.maxchunks}), stopping further splits for this file.")
+                break
+        
+        if i + 1 >= args.maxfiles:
+            print(f"[info] reached maxfiles limit ({args.maxfiles}), stopping further files.")
+            break
 
         f_in.Close()
 

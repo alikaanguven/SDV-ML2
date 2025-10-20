@@ -34,15 +34,15 @@ def get_branchDict():
                         'SDVIdxLUT_TrackWeight'
                         ]
 
-    # branchDict['jet'] = ['Jet_phi', 
-    #                     'Jet_eta',
-    #                     'Jet_jetId',
-    #                     'Jet_pt',
-    #                     'Jet_chEmEF',
-    #                     'Jet_neEmEF',
-    #                     'Jet_muonIdx1',
-    #                     'Jet_muonIdx2'
-    #                     ]
+    branchDict['jet'] = ['Jet_phi', 
+                        'Jet_eta',
+                        'Jet_jetId',
+                        'Jet_pt',
+                        'Jet_chEmEF',
+                        'Jet_neEmEF',
+                        'Jet_muonIdx1',
+                        'Jet_muonIdx2'
+                        ]
 
     branchDict['label'] = ['SDVSecVtx_matchedLLPnDau_bydau']
 

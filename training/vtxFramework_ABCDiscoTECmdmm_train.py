@@ -32,8 +32,8 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 from torch.optim.lr_scheduler import StepLR
-import torch.nn.functional as F
-from torch.profiler import profile, record_function, ProfilerActivity
+# import torch.nn.functional as F
+# from torch.profiler import profile, record_function, ProfilerActivity
 
 import user_scripts.ABCDiscoTEC_loss as ABCD
 
@@ -60,13 +60,15 @@ json_file = "/groups/hephy/cms/ang.li/MLjson/CustomNanoAOD_MLtraining_20250910.j
 with open(json_file, "r") as f:
     data = json.load(f)
 
-glob_dirs = []
-for key, value in data["CustomNanoAOD_MLtraining_20250910"]["dir"].items():
-    glob_dirs.append(value)
+# glob_dirs = []
+# for key, value in data["CustomNanoAOD_MLtraining_20250910"]["dir"].items():
+#     glob_dirs.append(value)
+
+glob_dirs = ['/scratch-cbe/users/alikaan.gueven/ML_KAAN/CustomNanoAOD_MLtraining_20250910_mixed']
 
 tmpSigList = []
 for sample_dir in glob_dirs:
-    tmpSigList.extend(glob.glob(f'{sample_dir}/*.root', recursive=True))
+    tmpSigList.extend(glob.glob(f'{sample_dir}/**/*.root', recursive=True))
 
 tmpSigList.sort()            # make deterministic order
 random.seed(42)              # set reproducible seed
@@ -74,10 +76,10 @@ random.shuffle(tmpSigList)   # shuffle in reproducible way
 
 tmpSigList = [sig + ':Events' for sig in tmpSigList]
 
-maxTrain = round(len(tmpSigList)*0.70)
+maxTrain = round(len(tmpSigList)*0.35)
 # maxTrain = round(len(tmpSigList)*0.01)
 
-minVal =   round(len(tmpSigList)*0.70)
+minVal =   round(len(tmpSigList)*0.85)
 # minVal =   round(len(tmpSigList)*0.99)
 maxVal   = round(len(tmpSigList)*1.00)
 
@@ -103,8 +105,8 @@ valDict = {
 branchDict = get_branchDict()
 
 shuffle = False
-nWorkers = 8
-base_step_size = 4000 # 1800
+nWorkers = 4
+base_step_size = 6000 # 9000 # 3000 # 5000
 if torch.cuda.device_count():
     step_size = base_step_size * torch.cuda.device_count()
 else:
@@ -169,21 +171,18 @@ param = {
     "class_weights": [1, 1],                # [bkg, sig]
     "init_step_size": step_size,
     "block_params": {'dropout': 0.20, 'attn_dropout': 0.15, 'activation_dropout': 0.15},
-    "num_layers": 6,
+    "num_layers": 8,
     "use_amp": False,
     "report_interval": 10,
     "loss_params": {
         'b1': 'random',
         'b2': 'random',
-        'k': 75.0,                 # scale parameter for the sigmoid
-        'w_cls':1.0,
-        'w_disco_bkg':0.6,
-        'w_disco_sig':0.0,
-        'w_closure':1.0,
-        'w_sigCR':0.0,          
-        'w_r':0.4,              
+        'k': 100.0,
+        'eps_closure': 0.1,
+        'eps_disco': 0.1,
+        'alpha_lr': 1e-5
         },
-    "fc_params": [(64, 0.3)]
+    "fc_params": [(64, 0.3),(64, 0.3)]
     }
 
 # Log
@@ -246,8 +245,13 @@ if torch.cuda.device_count() > 1:
 
 model.to(device, dtype=torch.float32)
 optimizer = Ranger(model.parameters(), lr=param['init_lr'], weight_decay=1e-2)
-scheduler = StepLR(optimizer, step_size=4, gamma=0.75)
-criterion = ABCD.abcdiscotec_loss
+scheduler = StepLR(optimizer, step_size=5, gamma=0.75)
+criterion = ABCD.ABCLagrangian(
+    param['loss_params']['eps_closure'],
+    param['loss_params']['eps_disco'],
+    param['loss_params']['k'],
+    param['loss_params']['alpha_lr'],
+).to(device)
 
 
 stats = nh.parameter_stats(model)
@@ -296,28 +300,12 @@ def train_step(X, batch_num, CM_epoch, losses):
     # print('logit2.shape: ', logit2.shape)
     # print('y.shape: ', y.shape)
 
-    hyperparameters = param['loss_params']
-    if hyperparameters['b1'] == 'random':
-        hyperparameters['b1'] = np.random.uniform(0.0, 1.0)
-    if hyperparameters['b2'] == 'random':
-        hyperparameters['b2'] = np.random.uniform(0.0, 1.0)
 
-    loss, someLogs = criterion(logit1, logit2, y,
-                               **hyperparameters)
+    b1 = np.random.uniform(0.01, 0.99) if param['loss_params']['b1'] == 'random' else param['loss_params']['b1']
+    b2 = np.random.uniform(0.01, 0.99) if param['loss_params']['b2'] == 'random' else param['loss_params']['b2']
+
+    loss, someLogs = criterion(logit1, logit2, y, b1, b2)
     
-
-
-
-#     if batch_num %param['report_interval'] == 0:
-#         if use_neptune:
-#             for k, v in someLogs.items():
-#                 run[f"train/{k}"].append(v)
-#         else:
-#             for k,v in someLogs.items():
-#                 print(f'{k}: {v}')
-#             print()
-#     for k, v in someLogs.items():
-#         losses[k].append(v)
 
     for k, v in someLogs.items():
         losses[k].append(v)
@@ -327,10 +315,16 @@ def train_step(X, batch_num, CM_epoch, losses):
             else:
                 print(f'{k}: {v}')
 
+    if not use_neptune and (batch_num %param['report_interval'] == 0):
+        a = torch.cuda.memory_allocated() / 1e9
+        r = torch.cuda.memory_reserved() / 1e9
+        m = torch.cuda.max_memory_allocated() / 1e9
+        print(f"alloc={a:.2f} GB, reserved={r:.2f} GB, max={m:.2f} GB")
+
+
     loss.backward()
     optimizer.step()
-
-
+    criterion.dual_ascent()
     
 
 
@@ -364,7 +358,11 @@ def validation_step(X, batch_num, CM_epoch, losses, p1_bucket, p2_bucket, label_
 
     logit1 = output['logit1'].squeeze(-1)
     logit2 = output['logit2'].squeeze(-1)
-    _, someLogs = criterion(logit1, logit2, y)
+    
+    b1 = np.random.uniform(0.01, 0.99) if param['loss_params']['b1'] == 'random' else param['loss_params']['b1']
+    b2 = np.random.uniform(0.01, 0.99) if param['loss_params']['b2'] == 'random' else param['loss_params']['b2']
+
+    loss, someLogs = criterion(logit1, logit2, y, b1, b2)
 
     p1 = torch.sigmoid(logit1)
     p2 = torch.sigmoid(logit2)
@@ -372,16 +370,7 @@ def validation_step(X, batch_num, CM_epoch, losses, p1_bucket, p2_bucket, label_
     p1_bucket.append(p1.detach().cpu())
     p2_bucket.append(p2.detach().cpu())
     label_bucket.append(y.detach().cpu())
-    
 
-#     if batch_num %param['report_interval'] == 0:
-#         if use_neptune:
-#             for k, v in someLogs.items():
-#                 run[f"val/{k}"].append(v)
-#         else:
-#             for k,v in someLogs.items():
-#                 print(f'{k}: {v}')
-#             print()
 
 
     for k, v in someLogs.items():
@@ -391,6 +380,12 @@ def validation_step(X, batch_num, CM_epoch, losses, p1_bucket, p2_bucket, label_
                 run[f"val/{k}"].append(v)
             else:
                 print(f'{k}: {v}')
+
+    if not use_neptune and (batch_num %param['report_interval'] == 0):
+        a = torch.cuda.memory_allocated() / 1e9
+        r = torch.cuda.memory_reserved() / 1e9
+        m = torch.cuda.max_memory_allocated() / 1e9
+        print(f"alloc={a:.2f} GB, reserved={r:.2f} GB, max={m:.2f} GB")
 
 
 
@@ -468,9 +463,9 @@ for epoch in range(num_epochs):
 
 
         ## min loss epoch save
-        if losses_epoch['total'] < best_val_loss:
+        if losses_epoch['loss'] < best_val_loss:
             suffix = 'best_valloss_epoch.pt'
-            best_val_loss = losses_epoch['total']
+            best_val_loss = losses_epoch['loss']
             savename = None
             if use_neptune:
                 savename = run["sys/id"].fetch() + suffix
