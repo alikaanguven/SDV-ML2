@@ -75,7 +75,8 @@ patterns = [f'{BKGDIR}/qcdht0700_2018/**/*.root',
             ]
 
 # Create fresh directory
-OUTBASEDIR = '/scratch-cbe/users/alikaan.gueven/ML_KAAN/CustomNanoAOD_MLtraining_20250910_split/bkg'
+# OUTBASEDIR = '/scratch-cbe/users/alikaan.gueven/ML_KAAN/CustomNanoAOD_MLtraining_20250910_split/bkg'
+OUTBASEDIR = '/scratch-cbe/users/alikaan.gueven/ML_KAAN//scratch-cbe/users/alikaan.gueven/ML_KAAN/ML_validation_exta_bkg'
 if os.path.exists(OUTBASEDIR): shutil.rmtree(OUTBASEDIR)
 os.makedirs(OUTBASEDIR, exist_ok=True)
 

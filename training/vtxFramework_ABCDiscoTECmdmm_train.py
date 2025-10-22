@@ -56,9 +56,9 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 
 
-json_file = "/groups/hephy/cms/ang.li/MLjson/CustomNanoAOD_MLtraining_20250910.json"
-with open(json_file, "r") as f:
-    data = json.load(f)
+# json_file = "/groups/hephy/cms/ang.li/MLjson/CustomNanoAOD_MLtraining_20250910.json"
+# with open(json_file, "r") as f:
+#     data = json.load(f)
 
 # glob_dirs = []
 # for key, value in data["CustomNanoAOD_MLtraining_20250910"]["dir"].items():
@@ -76,10 +76,10 @@ random.shuffle(tmpSigList)   # shuffle in reproducible way
 
 tmpSigList = [sig + ':Events' for sig in tmpSigList]
 
-maxTrain = round(len(tmpSigList)*0.35)
+maxTrain = round(len(tmpSigList)*0.70)
 # maxTrain = round(len(tmpSigList)*0.01)
 
-minVal =   round(len(tmpSigList)*0.85)
+minVal =   round(len(tmpSigList)*0.70)
 # minVal =   round(len(tmpSigList)*0.99)
 maxVal   = round(len(tmpSigList)*1.00)
 
@@ -106,7 +106,7 @@ branchDict = get_branchDict()
 
 shuffle = False
 nWorkers = 4
-base_step_size = 6000 # 9000 # 3000 # 5000
+base_step_size = 1000 # 5000 # 9000 # 3000 # 5000
 if torch.cuda.device_count():
     step_size = base_step_size * torch.cuda.device_count()
 else:
@@ -167,7 +167,7 @@ param = {
     "pair_embed_dims": [64, 64, 64],
     "num_classes": 1,
     "for_inference": False,
-    "init_lr": 1e-4,
+    "init_lr": 3e-4,
     "class_weights": [1, 1],                # [bkg, sig]
     "init_step_size": step_size,
     "block_params": {'dropout': 0.20, 'attn_dropout': 0.15, 'activation_dropout': 0.15},
@@ -177,7 +177,7 @@ param = {
     "loss_params": {
         'b1': 'random',
         'b2': 'random',
-        'k': 100.0,
+        'k': 75.0,
         'eps_closure': 0.1,
         'eps_disco': 0.1,
         'alpha_lr': 1e-5
@@ -187,7 +187,7 @@ param = {
 
 # Log
 ########################################################################
-use_neptune=True
+use_neptune=False
 
 from shutil import copytree, ignore_patterns
 

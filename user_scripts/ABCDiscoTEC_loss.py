@@ -136,10 +136,14 @@ class ABCLagrangian(nn.Module):
 
   def forward(self, logit1, logit2, y_true, b1, b2):
     y = y_true.to(dtype=logit1.dtype)
-    loss_bce = 0.5 * (
-      F.binary_cross_entropy_with_logits(logit1, y) +
-      F.binary_cross_entropy_with_logits(logit2, y)
-    )
+    # loss_bce = 0.5 * (
+    #   F.binary_cross_entropy_with_logits(logit1, y) +
+    #   F.binary_cross_entropy_with_logits(logit2, y)
+    # )
+
+    loss_bce = torch.sqrt(
+          (F.binary_cross_entropy_with_logits(logit1, y)**2 +
+           F.binary_cross_entropy_with_logits(logit2, y)**2)/2)
 
     s1 = torch.sigmoid(logit1)
     s2 = torch.sigmoid(logit2)
