@@ -37,13 +37,13 @@ def abcdiscotec_loss(
     y = y_true.float()
 
     # --- classification (either keep both heads, or use logitA = logit1+logit2) ---
-    # loss_cls = 0.5 * (
-    #     F.binary_cross_entropy_with_logits(logit1, y) +
-    #     F.binary_cross_entropy_with_logits(logit2, y)
+    loss_cls = 0.5 * (
+        F.binary_cross_entropy_with_logits(logit1, y) +
+        F.binary_cross_entropy_with_logits(logit2, y)
     # )
-    loss_cls = torch.sqrt(
-          (F.binary_cross_entropy_with_logits(logit1, y) +
-          F.binary_cross_entropy_with_logits(logit2, y))/2
+    # loss_cls = torch.sqrt(
+    #       (F.binary_cross_entropy_with_logits(logit1, y) +
+    #       F.binary_cross_entropy_with_logits(logit2, y))/2
 )
 
     # probabilities for ABCD/DisCo
@@ -185,7 +185,7 @@ class ABCLagrangian(nn.Module):
 
     delta_closure = loss_closure - self.eps_closure
     delta_disco_b   = disco_bkg    - self.eps_disco
-    delta_disco_s   = disco_sig    - (self.eps_disco * 4)
+    delta_disco_s   = disco_sig    - self.eps_disco * 4
     delta_disco     = delta_disco_b + delta_disco_s
 
     loss = loss_bce + self.alpha_closure * delta_closure + self.alpha_disco * delta_disco

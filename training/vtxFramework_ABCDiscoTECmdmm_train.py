@@ -53,7 +53,26 @@ import json
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
+# ------------------------------------------------------------
+# machine_dependent_defifinitions
 
+hostname = os.uname()[1]
+if 'hepgpu' in hostname:
+    DATA_READ_BASEPATH  = '/scratch/agueven/ParT/dataset'                                # Change here on HEPGPU!!!
+    RUN_SAVE_BASEPATH   = '/scratch/agueven/ParT/runs'                                   # Change here on HEPGPU!!!
+    MODEL_SAVE_BASEPATH = '/scratch/agueven/ParT/models'                                 # Change here on HEPGPU!!!
+    gpus = [2]
+elif 'clip' in hostname:
+    DATA_READ_BASEPATH  = '/scratch-cbe/users/alikaan.gueven/ML_KAAN'
+    RUN_SAVE_BASEPATH   = '/groups/hephy/cms/alikaan.gueven/ParT/runs'
+    MODEL_SAVE_BASEPATH = '/groups/hephy/cms/alikaan.gueven/ParT/models'
+    gpus = [0]
+else:
+    raise ValueError('Which machine is this? Seems like this is not clip or hepgpu.')
+
+
+gpus_str = [str(gpu) for gpu in gpus]
+# ------------------------------------------------------------
 
 
 # json_file = "/groups/hephy/cms/ang.li/MLjson/CustomNanoAOD_MLtraining_20250910.json"
@@ -64,7 +83,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 # for key, value in data["CustomNanoAOD_MLtraining_20250910"]["dir"].items():
 #     glob_dirs.append(value)
 
-glob_dirs = ['/scratch-cbe/users/alikaan.gueven/ML_KAAN/CustomNanoAOD_MLtraining_20250910_mixed']
+glob_dirs = [os.path.join(DATA_READ_BASEPATH, 'CustomNanoAOD_MLtraining_20250910_mixed')]
 
 tmpSigList = []
 for sample_dir in glob_dirs:
@@ -76,20 +95,19 @@ random.shuffle(tmpSigList)   # shuffle in reproducible way
 
 tmpSigList = [sig + ':Events' for sig in tmpSigList]
 
-maxTrain = round(len(tmpSigList)*0.70)
-# maxTrain = round(len(tmpSigList)*0.01)
 
-minVal =   round(len(tmpSigList)*0.70)
-# minVal =   round(len(tmpSigList)*0.99)
+minTrain = round(len(tmpSigList)*0.00)
+maxTrain = round(len(tmpSigList)*0.10)
+minVal   = round(len(tmpSigList)*0.95)
 maxVal   = round(len(tmpSigList)*1.00)
 
 
 
-trainSigList = tmpSigList[:maxTrain]
-valSigList   = tmpSigList[minVal:maxVal]
+trainSigList = tmpSigList[minTrain:maxTrain]
 
-
-
+extraValList = glob.glob(os.path.join(DATA_READ_BASEPATH, 'ML_validation_exta_bkg/**/*.root'), recursive=True)
+extraValList = [val + ':Events' for val in extraValList]
+valSigList   = tmpSigList[minVal:maxVal] + extraValList
 
 
 trainDict = {
@@ -106,11 +124,11 @@ branchDict = get_branchDict()
 
 shuffle = False
 nWorkers = 4
-base_step_size = 1000 # 5000 # 9000 # 3000 # 5000
-if torch.cuda.device_count():
-    step_size = base_step_size * torch.cuda.device_count()
-else:
-    step_size = base_step_size
+
+
+base_step_size = 1000 # 6000
+step_size = base_step_size # * len(gpus)
+
 
 preprocess_fn = partial(preprocess.transform, branch_dict=branchDict)
 
@@ -136,7 +154,7 @@ valDataset = ModifiedUprootIterator(valDict,
                                     branchDict,
                                     shuffle=shuffle,
                                     nWorkers=nWorkers,
-                                    step_size=step_size*5)
+                                    step_size=step_size)
 
 valLoader = torch.utils.data.DataLoader(valDataset,
                                         num_workers=nWorkers,
@@ -150,8 +168,6 @@ valLoader = torch.utils.data.DataLoader(valDataset,
 
 # Training related 
 ########################################################################
-
-device = torch.device(f'cuda' if torch.cuda.is_available() else 'cpu')
 
 input_shapes = probe_shapes(ModifiedUprootIterator,
                             trainDict,
@@ -167,7 +183,7 @@ param = {
     "pair_embed_dims": [64, 64, 64],
     "num_classes": 1,
     "for_inference": False,
-    "init_lr": 3e-4,
+    "init_lr": 1e-4,
     "class_weights": [1, 1],                # [bkg, sig]
     "init_step_size": step_size,
     "block_params": {'dropout': 0.20, 'attn_dropout': 0.15, 'activation_dropout': 0.15},
@@ -175,9 +191,9 @@ param = {
     "use_amp": False,
     "report_interval": 10,
     "loss_params": {
-        'b1': 'random',
-        'b2': 'random',
-        'k': 75.0,
+        'b1': 'random.linear',
+        'b2': 'random.linear',
+        'k': 100.0,
         'eps_closure': 0.1,
         'eps_disco': 0.1,
         'alpha_lr': 1e-5
@@ -185,9 +201,16 @@ param = {
     "fc_params": [(64, 0.3),(64, 0.3)]
     }
 
+if (param['loss_params']['b1'].startswith('random')) and (param['loss_params']['b2'].startswith('random')):
+    from scipy.stats import rv_continuous
+    # Define a linear PDF: p(x) ∝ x over [0, 1]
+    class linear_pdf(rv_continuous):
+        def _pdf(self, x):
+            return (2 * x + 1) / 2 # normalized on [0,1] (since ∫0^1 2x dx = 1)
+
 # Log
 ########################################################################
-use_neptune=False
+use_neptune=True
 
 from shutil import copytree, ignore_patterns
 
@@ -198,9 +221,11 @@ if use_neptune:
 
     run = neptune.init_run(
         project="alikaan.guven/ParT",
-        source_files=[os.path.join(PROJECT_DIR, __file__),
-                      os.path.join(PROJECT_DIR, preprocess.__file__),
-                      os.path.join(PROJECT_DIR, ParT.__file__)]
+        source_files=[__file__,
+                      preprocess.__file__,
+                      ParT.__file__,
+                      ABCD.__file__,
+                      ]
     )
 
 
@@ -209,9 +234,9 @@ if use_neptune:
 else:
     run_savename = "vtx" + datetime.datetime.now().strftime('_%Y-%m-%d-%H-%M-%S')
 
-destination = os.path.join('/groups/hephy/cms/alikaan.gueven/ParT/runs', run_savename)
+cp_dest = os.path.join(RUN_SAVE_BASEPATH, run_savename)
 copytree(PROJECT_DIR,
-        destination,
+        cp_dest,
         ignore=ignore_patterns('*.pyc', 'tmp*', '*.root', '*.pt', '*.png', '*.pdf', '*.ipynb_checkpoints', '__pycache__', '*.ipynb', 'tb*', '.neptune*', 'neptune_key*'))
 
 if use_neptune:
@@ -240,8 +265,9 @@ print("heads_share_params?", share)  # should be False
 print('CPU count: ', torch.multiprocessing.cpu_count())
 if torch.cuda.device_count() > 1:
     print("Using ", torch.cuda.device_count(), "GPUs!\n\n")
-    model = nn.DataParallel(model)
+    model = nn.DataParallel(model, device_ids = gpus)
 
+device = f'cuda:{gpus[0]}'
 
 model.to(device, dtype=torch.float32)
 optimizer = Ranger(model.parameters(), lr=param['init_lr'], weight_decay=1e-2)
@@ -300,9 +326,16 @@ def train_step(X, batch_num, CM_epoch, losses):
     # print('logit2.shape: ', logit2.shape)
     # print('y.shape: ', y.shape)
 
-
-    b1 = np.random.uniform(0.01, 0.99) if param['loss_params']['b1'] == 'random' else param['loss_params']['b1']
-    b2 = np.random.uniform(0.01, 0.99) if param['loss_params']['b2'] == 'random' else param['loss_params']['b2']
+    if (param['loss_params']['b1'] == 'random.uniform') and (param['loss_params']['b2'] == 'random.uniform'):
+        b1 = np.random.uniform(0.01, 0.99)
+        b2 = np.random.uniform(0.01, 0.99)
+    elif (param['loss_params']['b1'] == 'random.linear') and (param['loss_params']['b2'] == 'random.linear'):
+        linear_dist = linear_pdf(a=0, b=1, name='linear')
+        b1 = linear_dist.rvs()
+        b2 = linear_dist.rvs()
+    else:
+        b1 = param['loss_params']['b1']
+        b2 = param['loss_params']['b2']
 
     loss, someLogs = criterion(logit1, logit2, y, b1, b2)
     
@@ -316,9 +349,9 @@ def train_step(X, batch_num, CM_epoch, losses):
                 print(f'{k}: {v}')
 
     if not use_neptune and (batch_num %param['report_interval'] == 0):
-        a = torch.cuda.memory_allocated() / 1e9
-        r = torch.cuda.memory_reserved() / 1e9
-        m = torch.cuda.max_memory_allocated() / 1e9
+        a = torch.cuda.memory_allocated(gpus[0]) / 1e9
+        r = torch.cuda.memory_reserved(gpus[0]) / 1e9
+        m = torch.cuda.max_memory_allocated(gpus[0]) / 1e9
         print(f"alloc={a:.2f} GB, reserved={r:.2f} GB, max={m:.2f} GB")
 
 
@@ -358,9 +391,17 @@ def validation_step(X, batch_num, CM_epoch, losses, p1_bucket, p2_bucket, label_
 
     logit1 = output['logit1'].squeeze(-1)
     logit2 = output['logit2'].squeeze(-1)
-    
-    b1 = np.random.uniform(0.01, 0.99) if param['loss_params']['b1'] == 'random' else param['loss_params']['b1']
-    b2 = np.random.uniform(0.01, 0.99) if param['loss_params']['b2'] == 'random' else param['loss_params']['b2']
+
+    if (param['loss_params']['b1'] == 'random.uniform') and (param['loss_params']['b2'] == 'random.uniform'):
+        b1 = np.random.uniform(0.01, 0.99)
+        b2 = np.random.uniform(0.01, 0.99)
+    elif (param['loss_params']['b1'] == 'random.linear') and (param['loss_params']['b2'] == 'random.linear'):
+        linear_dist = linear_pdf(a=0, b=1, name='linear')
+        b1 = linear_dist.rvs()
+        b2 = linear_dist.rvs()
+    else:
+        b1 = param['loss_params']['b1']
+        b2 = param['loss_params']['b2']
 
     loss, someLogs = criterion(logit1, logit2, y, b1, b2)
 
@@ -390,7 +431,7 @@ def validation_step(X, batch_num, CM_epoch, losses, p1_bucket, p2_bucket, label_
 
 
 
-num_epochs = 200
+num_epochs = 100
 
 
 class_weights_tensor = torch.tensor(param['class_weights']).to(device, dtype=torch.float32)
@@ -472,12 +513,12 @@ for epoch in range(num_epochs):
             else:
                 savename = 'ParT_modified' + datetime.datetime.now().strftime('_%Y-%m-%d-%H-%M-%S_') + suffix
             # torch.save(model.state_dict(), '/users/alikaan.gueven/ParticleTransformer/PyTorchExercises/models/vtx_' + savename)
-            torch.save(model, '/groups/hephy/cms/alikaan.gueven/ParT/models/vtx_' + savename)
+            torch.save(model, MODEL_SAVE_BASEPATH + 'vtx_' + savename)
         
         if use_neptune:
-            torch.save(model, '/groups/hephy/cms/alikaan.gueven/ParT/models/vtx_' + run["sys/id"].fetch() + '_epoch_' + str(epoch) + '.pt')
+            torch.save(model, MODEL_SAVE_BASEPATH + 'vtx_' + run["sys/id"].fetch() + '_epoch_' + str(epoch) + '.pt')
         else:
-            torch.save(model, '/groups/hephy/cms/alikaan.gueven/ParT/models/vtx_' + datetime.datetime.now().strftime('_%Y-%m-%d-%H-%M-%S_') + '_epoch_' + str(epoch) + '.pt')
+            torch.save(model, MODEL_SAVE_BASEPATH + 'vtx_' + datetime.datetime.now().strftime('_%Y-%m-%d-%H-%M-%S_') + '_epoch_' + str(epoch) + '.pt')
 
 
         if use_neptune:
@@ -485,9 +526,9 @@ for epoch in range(num_epochs):
             p1s    = torch.cat(p1_bucket)
             p2s    = torch.cat(p2_bucket)
 
-            val_plots.plot_hist1(p1s, isMatched, PROJECT_DIR, "p1_hist", run)
-            val_plots.plot_hist1(p2s, isMatched, PROJECT_DIR, "p2_hist", run)
-            val_plots.plot_hist2(p1s, p2s, isMatched,  PROJECT_DIR, "p1p2_hist", run)
+            val_plots.plot_hist1(p1s, isMatched, "p1_hist", run)
+            val_plots.plot_hist1(p2s, isMatched, "p2_hist", run)
+            val_plots.plot_hist2(p1s, p2s, isMatched, "p1p2_hist", run)
 
             
 
