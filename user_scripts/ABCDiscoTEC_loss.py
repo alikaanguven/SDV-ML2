@@ -143,7 +143,8 @@ class ABCLagrangian(nn.Module):
 
     loss_bce = torch.sqrt(
           (F.binary_cross_entropy_with_logits(logit1, y)**2 +
-           F.binary_cross_entropy_with_logits(logit2, y)**2)/2)
+           F.binary_cross_entropy_with_logits(logit2, y)**2)/2
+    )
 
     s1 = torch.sigmoid(logit1)
     s2 = torch.sigmoid(logit2)
@@ -185,7 +186,7 @@ class ABCLagrangian(nn.Module):
 
     delta_closure = loss_closure - self.eps_closure
     delta_disco_b   = disco_bkg    - self.eps_disco
-    delta_disco_s   = disco_sig    - self.eps_disco * 4
+    delta_disco_s   = disco_sig    - self.eps_disco # * 4
     delta_disco     = delta_disco_b + delta_disco_s
 
     loss = loss_bce + self.alpha_closure * delta_closure + self.alpha_disco * delta_disco

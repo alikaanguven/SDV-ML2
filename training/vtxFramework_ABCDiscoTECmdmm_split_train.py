@@ -16,7 +16,7 @@ from collections import defaultdict
 
 
 
-import networks.ParT_ABCDiscoTEC as ParT
+import networks.ParT_ABCDiscoTEC_split as ParT
 import user_scripts.preprocess as preprocess
 from   user_scripts.branches_to_get import get_branchDict
 import user_scripts.val_plots as val_plots
@@ -61,7 +61,7 @@ if 'hepgpu' in hostname:
     DATA_READ_BASEPATH  = '/scratch/agueven/ParT/datasets'                               # Change here on HEPGPU!!!
     RUN_SAVE_BASEPATH   = '/scratch/agueven/ParT/runs'                                   # Change here on HEPGPU!!!
     MODEL_SAVE_BASEPATH = '/scratch/agueven/ParT/models'                                 # Change here on HEPGPU!!!
-    gpus = [2] # normally 2
+    gpus = [3] # normally 2
 elif 'clip' in hostname:
     DATA_READ_BASEPATH  = '/scratch-cbe/users/alikaan.gueven/ML_KAAN'
     RUN_SAVE_BASEPATH   = '/groups/hephy/cms/alikaan.gueven/ParT/runs'
@@ -131,7 +131,7 @@ shuffle = False
 nWorkers = 4
 
 
-base_step_size = 6000
+base_step_size = 5000
 step_size = base_step_size # * len(gpus)
 
 
@@ -204,7 +204,7 @@ param = {
     "class_weights": [1, 1],                # [bkg, sig]
     "init_step_size": step_size,
     "block_params": {'dropout': 0.20, 'attn_dropout': 0.15, 'activation_dropout': 0.15},
-    "num_layers": 8,
+    "num_layers": 4,
     "use_amp": False,
     "report_interval": 10,
     "loss_params": {
@@ -215,7 +215,7 @@ param = {
         'eps_disco': 0.1,
         'alpha_lr': 1e-5
         },
-    "fc_params": [(64, 0.3),(64, 0.3)]
+    "fc_params": [(64, 0.2)]
     }
 
 if (param['loss_params']['b1'].startswith('random')) and (param['loss_params']['b2'].startswith('random')):
@@ -272,11 +272,6 @@ model = ParT.ParticleTransformerDVTagger(input_dim      = param['input_dim'],
                                          fc_params      = param['fc_params']
                                          )
 
-# run once after model init
-share = any(p1.data_ptr() == p2.data_ptr()
-            for p1 in model.fc_head1.parameters()
-            for p2 in model.fc_head2.parameters())
-print("heads_share_params?", share)  # should be False
 
 
 print('CPU count: ', torch.multiprocessing.cpu_count())

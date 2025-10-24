@@ -121,7 +121,71 @@ def scan_Z(
     return Z, Ssum, Bsum
 
 
-# --- Plotting functions (names kept) -----------------------------------------
+def scan_nonclosure(
+    bkg_counts: np.ndarray,
+    x_edges: np.ndarray,
+    y_edges: np.ndarray,
+    x_thresh: np.ndarray,
+    y_thresh: np.ndarray,
+    *,
+    numeric_eps: float = 0.0,
+):
+    """
+    Compute non-closure grid for background:
+        nonclosure = | 1 - (NB * NC) / (NA * ND) |
+
+    Regions (thresholds tx, ty):
+      A: x>=tx, y>=ty
+      B: x< tx, y>=ty
+      C: x>=tx, y< ty
+      D: x< tx, y< ty
+
+    Returns:
+      noncl : (len(x_thresh), len(y_thresh)) array
+      NA, NB, NC, ND : same-shape arrays of region integrals
+    """
+    x_thresh = np.asarray(x_thresh, float)
+    y_thresh = np.asarray(y_thresh, float)
+
+    noncl = np.full((len(x_thresh), len(y_thresh)), np.nan, dtype=float)
+    NA    = np.zeros_like(noncl)
+    NB    = np.zeros_like(noncl)
+    NC    = np.zeros_like(noncl)
+    ND    = np.zeros_like(noncl)
+
+    # get an eps smaller than threshold bin width
+    # so that we don't count a bin twice
+    x_thr_w = x_thresh[1] - x_thresh[0]
+    y_thr_w = y_thresh[1] - y_thresh[0]
+    eps = min(x_thr_w, y_thr_w) / 1e2
+
+    for i, tx in enumerate(x_thresh):
+        for j, ty in enumerate(y_thresh):
+            a = integral2d(bkg_counts, x_edges, y_edges, tx,            None,   ty,          None)
+            b = integral2d(bkg_counts, x_edges, y_edges, x_thresh[0],   tx-eps, ty,          None)
+            c = integral2d(bkg_counts, x_edges, y_edges, tx,            None,   y_thresh[0], ty-eps)
+            d = integral2d(bkg_counts, x_edges, y_edges, x_thresh[0],   tx-eps, y_thresh[0], ty-eps)
+
+            NA[i, j] = a
+            NB[i, j] = b
+            NC[i, j] = c
+            ND[i, j] = d
+
+            denom = a * d
+            numer = b * c
+
+            if numeric_eps > 0.0:
+                denom = max(denom, numeric_eps)
+
+            if denom > 0.0:
+                noncl[i, j] = abs(1.0 - (numer / denom))
+            else:
+                noncl[i, j] = np.nan
+
+    return noncl, NA, NB, NC, ND
+
+
+# --- Plotting functions  -------------------------------------------------------
 
 def plot_hist1(
     p: np.ndarray,
@@ -166,70 +230,6 @@ def plot_hist1(
 
     _save_fig_to_tmp(run, savename)
 
-# --- ABCD non-closure (background) -------------------------------------------
-
-def scan_nonclosure(
-    bkg_counts: np.ndarray,
-    x_edges: np.ndarray,
-    y_edges: np.ndarray,
-    x_thresh: np.ndarray,
-    y_thresh: np.ndarray,
-    *,
-    numeric_eps: float = 0.0,
-):
-    """
-    Compute non-closure grid for background:
-        nonclosure = | 1 - (NB * NC) / (NA * ND) |
-
-    Regions (thresholds tx, ty):
-      A: x>=tx, y>=ty
-      B: x< tx, y>=ty
-      C: x>=tx, y< ty
-      D: x< tx, y< ty
-
-    Returns:
-      noncl : (len(x_thresh), len(y_thresh)) array
-      NA, NB, NC, ND : same-shape arrays of region integrals
-    """
-    x_thresh = np.asarray(x_thresh, float)
-    y_thresh = np.asarray(y_thresh, float)
-
-    noncl = np.full((len(x_thresh), len(y_thresh)), np.nan, dtype=float)
-    NA    = np.zeros_like(noncl)
-    NB    = np.zeros_like(noncl)
-    NC    = np.zeros_like(noncl)
-    ND    = np.zeros_like(noncl)
-
-    # get an eps smaller than threshold bin width
-    # so that we don't count a bin twice
-    x_thr_w = x_thresh[1] - x_thresh[0]
-    y_thr_w = y_thresh[1] - y_thresh[0]
-    eps = min(x_thr_w, y_thr_w) / 1e2
-
-    for i, tx in enumerate(x_thresh):
-        for j, ty in enumerate(y_thresh):
-            a = integral2d(bkg_counts, x_edges, y_edges, tx, None, ty, None)
-            b = integral2d(bkg_counts, x_edges, y_edges, None, tx-eps,  ty, None)
-            c = integral2d(bkg_counts, x_edges, y_edges, tx, None, None, ty-eps)
-            d = integral2d(bkg_counts, x_edges, y_edges, None, tx-eps,  None, ty-eps)
-
-            NA[i, j] = a
-            NB[i, j] = b
-            NC[i, j] = c
-            ND[i, j] = d
-
-            denom = a * d
-            numer = b * c
-
-            if numeric_eps > 0.0:
-                denom = max(denom, numeric_eps)
-
-            if denom > 0.0:
-                noncl[i, j] = abs(1.0 - (numer / denom))
-            else:
-                noncl[i, j] = np.nan
-
-    return noncl, NA, NB, NC, ND
 
 
 def plot_bkg_nonclosure(
@@ -261,7 +261,7 @@ def plot_bkg_nonclosure(
     # Optional contours at common tolerances
     finite_vals = noncl[np.isfinite(noncl)]
     if finite_vals.size:
-        levels = [0.02, 0.05, 0.10, 0.20]
+        levels = [0.10, 0.20, 0.50]
         levels = [lv for lv in levels if lv <= np.nanmax(finite_vals)]
         if levels:
             cont = plt.contour(x_thresh, y_thresh, noncl.T, levels=levels, colors="white", linewidths=1.0)
@@ -289,7 +289,7 @@ def plot_hist2(
     savename: str,
     run,                  # Neptune run
     binwidth: float = 0.02,
-    cmin: float = 1e-3,
+    cmin: float = 1e-3
 ):
     """
     2D density plots for (p1, p2) for matched and non-matched,
@@ -365,6 +365,8 @@ def plot_hist2(
     Z_max = np.nanmax(Z)
     ix_best, iy_best = np.unravel_index(np.nanargmax(Z), Z.shape)
 
+
+    # --- Plot the significance -----------------------------------------------
     plt.figure()
     # For 1D threshold arrays, pcolormesh expects (Ny, Nx) data when passing centers; Z.T is correct
     pcm = plt.pcolormesh(x_thresh, y_thresh, Z.T, shading="auto")
@@ -384,5 +386,34 @@ def plot_hist2(
     plt.tight_layout()
     _save_fig_to_tmp(run, f"{savename}_Z")
 
-    noncl, NA, NB, NC, ND = scan_nonclosure(bkg_counts, x_edges, y_edges, x_thresh, y_thresh)
+    # noncl, NA, NB, NC, ND = scan_nonclosure(bkg_counts, x_edges, y_edges, x_thresh, y_thresh)
+    # plot_bkg_nonclosure(bkg_counts, x_edges, y_edges, x_thresh, y_thresh, savename, run)
+
+
+def plot_only_nonclosure(
+    p1: np.ndarray,
+    p2: np.ndarray,
+    match: np.ndarray,
+    x_thresh: np.ndarray,
+    y_thresh: np.ndarray,
+    savename: str,
+    run,                  # Neptune run
+    binwidth: float = 0.02,
+):
+    """
+    2D density plots for (p1, p2) for matched and non-matched,
+    plus an Asimov-Z scan over (x_thresh, y_thresh).
+    """
+    _ensure_tmp_dir()
+
+    # Bin edges that include 1.0 exactly
+    x_bins = np.arange(0.0, 1.0 + binwidth, binwidth)
+    y_bins = np.arange(0.0, 1.0 + binwidth, binwidth)
+
+    bkg_counts, x_edges, y_edges = np.histogram2d(
+        p1[~match], p2[~match],
+        bins=[x_bins, y_bins],
+        density=True,
+    )
+
     plot_bkg_nonclosure(bkg_counts, x_edges, y_edges, x_thresh, y_thresh, savename, run)
