@@ -237,3 +237,13 @@ def stable_iterator(files, keys, superbatch_size=100, drop_last=False):
         yield ak.concatenate(arrays)
     else:
         pass # Last batch is dropped
+
+
+def _prewarm(loader, n_batches=1):
+    it = iter(loader)
+    for _ in range(n_batches):
+        try:
+            next(it)
+        except StopIteration:
+            break
+    del it

@@ -76,7 +76,7 @@ patterns = [f'{BKGDIR}/qcdht0700_2018/**/*.root',
 
 # Create fresh directory
 # OUTBASEDIR = '/scratch-cbe/users/alikaan.gueven/ML_KAAN/CustomNanoAOD_MLtraining_20250910_split/bkg'
-OUTBASEDIR = '/scratch-cbe/users/alikaan.gueven/ML_KAAN//scratch-cbe/users/alikaan.gueven/ML_KAAN/ML_validation_exta_bkg'
+OUTBASEDIR = '/scratch-cbe/users/alikaan.gueven/ML_KAAN/ML_validation_exta_bkg_split'
 if os.path.exists(OUTBASEDIR): shutil.rmtree(OUTBASEDIR)
 os.makedirs(OUTBASEDIR, exist_ok=True)
 
@@ -91,8 +91,9 @@ def run_job(pattern):
         "--glob", pattern,
         "--chunk", str(500),
         "--outdir", outdir,
-        "--maxchunks", str(1),
-        "--maxfiles", str(20),
+        "--maxchunks", str(2),
+        "--maxfiles", str(40),
+        "--shuffle",
     ], check=True)
 
 

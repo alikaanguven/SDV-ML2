@@ -6,15 +6,19 @@ import ROOT
 # SRC_BASE     = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_signal_split"
 # DST_BASE     = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_signal_mixed"
 
-SRC_BASE     = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/CustomNanoAOD_MLtraining_20250910_split"
-DST_BASE     = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/CustomNanoAOD_MLtraining_20250910_mixed"
+# SRC_BASE     = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/CustomNanoAOD_MLtraining_20250910_split"
+# DST_BASE     = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/CustomNanoAOD_MLtraining_20250910_mixed"
+
+SRC_BASE     = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/ML_validation_exta_bkg_split/"
+DST_BASE     = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/ML_validation_extra"
 
 # Collect files by NAME pattern (recursive under SRC_BASE)
 # e.g. "*.root" or "*__split_*.root" or "stop_*_2018_*.root"
 NAME_PATTERN = "*.root"
 
 # OUT_PREFIX   = "stop_mix"   # prefix for output files: e.g. ALL__merged_000.root
-OUT_PREFIX   = "train_mix"   # prefix for output files: e.g. ALL__merged_000.root
+# OUT_PREFIX   = "train_mix"   # prefix for output files: e.g. ALL__merged_000.root
+OUT_PREFIX   = "val_mix"   # prefix for output files: e.g. ALL__merged_000.root
 CHUNK_GB     = 2.0
 CHUNK_BYTES  = int(CHUNK_GB * 1024**3)
 HADD_THREADS = 1       # -j for hadd

@@ -15,7 +15,7 @@ if str(PROJECT_DIR) not in sys.path: sys.path.insert(0, str(PROJECT_DIR))
 # Get sample names from JSON file
 # -----------------------------------
 # JSON_PATH = '/users/alikaan.gueven/AngPlotter/new_CMSSW/CMSSW_13_3_0/src/SoftDisplacedVertices/Samples/json/MC_RunIISummer20UL18.json'
-JSON_PATH = '/users/alikaan.gueven/AOD_to_nanoAOD/CMSSW_13_0_16/src/SoftDisplacedVertices/Samples/json/MLNano.json'
+JSON_PATH = '/users/alikaan.gueven/AOD_to_nanoAOD/feature_Run3/CMSSW_13_3_0/src/SoftDisplacedVertices/Samples/json/MLNano.json'
 with open(JSON_PATH) as f:
     x = json.load(f)
 samples = x['CustomNanoAOD']['dir'].keys()

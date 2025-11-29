@@ -15,6 +15,7 @@ import os
 import glob
 import argparse
 import ROOT
+import random
 
 
 def main():
@@ -25,6 +26,7 @@ def main():
     p.add_argument("--chunk", type=int, required=True, help="Chunk size (events per output file).")
     p.add_argument("--outdir", required=True, help="Directory to write split files.")
     p.add_argument("--tree", default="Events", help="TTree name (default: Events).")
+    p.add_argument("--shuffle", action="store_true", help="Shuffle events (default: off).")
     p.add_argument("--maxchunks", type=int, default=1000000, help="Max chunks to process per input file (default: million).")
     p.add_argument("--maxfiles", type=int, default=1000000, help="Max files to process (default: million).")
     p.add_argument("--compression", type=int, default=1, help="ROOT compression 0..9 (default: 1).")
@@ -33,8 +35,10 @@ def main():
     files = sorted(glob.glob(args.glob, recursive=True))
     if not files:
         raise SystemExit("No input files matched the glob.")
-
     os.makedirs(args.outdir, exist_ok=True)
+
+    if args.shuffle:
+        random.shuffle(files)
 
     for i, in_path in enumerate(files):
         f_in = ROOT.TFile.Open(in_path, "READ")

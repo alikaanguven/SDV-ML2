@@ -21,6 +21,7 @@ def get_branchDict():
                         'SDVTrack_eta',
                         'SDVTrack_phi',
                         'SDVTrack_dxy',
+                        'SDVTrack_dxyError',
                         'SDVTrack_dz', 
                         'SDVTrack_normalizedChi2',
                         # 'SDVTrack_dr03TkSumPt',

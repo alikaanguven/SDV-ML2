@@ -19,10 +19,11 @@ from collections import defaultdict
 import networks.ParT_ABCDiscoTEC_split as ParT
 import user_scripts.preprocess as preprocess
 from   user_scripts.branches_to_get import get_branchDict
-import user_scripts.val_plots as val_plots
+import user_scripts.val_plots2 as val_plots
 import utils.network_helpers as nh
 
 from utils.vtxLevelDataset import ModifiedUprootIterator
+from utils.vtxLevelDataset import _prewarm
 from utils.help_preprocess import probe_shapes
 from utils.optimizers.ranger import Ranger
 
@@ -48,8 +49,17 @@ import os
 import random
 import json
 
-
 warnings.filterwarnings("ignore", category=UserWarning)
+
+# ---------------- CHUNK 0: light CLI overrides ----------------
+import argparse
+cli = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+cli.add_argument('--init_lr',       type=float, default=1e-4, help='LR to override param["init_lr"]')
+cli.add_argument('--alpha_lr',      type=float, default=1e-5, help='LR to override param["loss_params"]["alpha_lr"]')
+cli.add_argument('--k',             type=float, default=100,  help='LR to override param["loss_params"]["k"]')
+cli.add_argument('--eps_closure',   type=float, default=1e-2, help='LR to override param["loss_params"]["eps_closure"]')
+cli.add_argument('--eps_disco',     type=float, default=1e-2, help='LR to override param["loss_params"]["eps_disco"]')
+args = cli.parse_args()
 
 # ------------------------------------------------------------
 # machine_dependent_defifinitions
@@ -59,7 +69,7 @@ if 'hepgpu' in hostname:
     DATA_READ_BASEPATH  = '/scratch/agueven/ParT/datasets'                               # Change here on HEPGPU!!!
     RUN_SAVE_BASEPATH   = '/scratch/agueven/ParT/runs'                                   # Change here on HEPGPU!!!
     MODEL_SAVE_BASEPATH = '/scratch/agueven/ParT/models'                                 # Change here on HEPGPU!!!
-    gpus = [3] # normally 2
+    gpus = [2] # normally 2
 elif 'clip' in hostname:
     DATA_READ_BASEPATH  = '/scratch-cbe/users/alikaan.gueven/ML_KAAN'
     RUN_SAVE_BASEPATH   = '/groups/hephy/cms/alikaan.gueven/ParT/runs'
@@ -105,7 +115,8 @@ trainSigList = tmpSigList[minTrain:maxTrain]
 valSigList   = tmpSigList[minVal:maxVal]
 
 extraValList = glob.glob(os.path.join(DATA_READ_BASEPATH, 'ML_validation_exta_bkg/**/*.root'), recursive=True)
-nonclBkgList = [val + ':Events' for val in extraValList]
+extraBkgList = [val + ':Events' for val in extraValList]
+# nonclBkgList = [val + ':Events' for val in extraValList]
 
 
 trainDict = {
@@ -114,14 +125,14 @@ trainDict = {
 }
 
 valDict = {
-    'sig': valSigList,
+    'sig': valSigList + extraBkgList,
     'bkg': None
 }
 
-nonclDict = {
-    'sig': nonclBkgList,
-    'bkg': None
-}
+# nonclDict = {
+#     'sig': nonclBkgList,
+#     'bkg': None
+# }
 
 branchDict = get_branchDict()
 
@@ -129,8 +140,8 @@ shuffle = False
 nWorkers = 4
 
 
-base_step_size = 4400
-step_size = base_step_size
+base_step_size = 4000
+step_size = base_step_size # * len(gpus)
 
 
 preprocess_fn = partial(preprocess.transform, branch_dict=branchDict)
@@ -166,20 +177,13 @@ valLoader = torch.utils.data.DataLoader(valDataset,
                                         collate_fn=preprocess_fn,
                                         pin_memory=True)
 
-nonclDataset = ModifiedUprootIterator(nonclDict,
-                                      branchDict,
-                                      shuffle=shuffle,
-                                      nWorkers=nWorkers,
-                                      step_size=step_size)
 
-nonclLoader = torch.utils.data.DataLoader(nonclDataset,
-                                          num_workers=nWorkers,
-                                          prefetch_factor=prefetch_factor,
-                                          persistent_workers= True,
-                                          collate_fn=preprocess_fn,
-                                          pin_memory=True)
-
-
+# When neptune server is too busy the workers of DataLoaders won't start.
+# This starts the workers before neptune is initialised.
+_prewarm(trainLoader, 1)
+_prewarm(valLoader,   1)
+# _prewarm(nonclLoader, 1)
+# ----------------------------------------------------------------------
 
 # Training related 
 ########################################################################
@@ -198,20 +202,20 @@ param = {
     "pair_embed_dims": [64, 64, 64],
     "num_classes": 1,
     "for_inference": False,
-    "init_lr": 1e-4,
+    "init_lr": args.init_lr,
     "class_weights": [1, 1],                # [bkg, sig]
     "init_step_size": step_size,
     "block_params": {'dropout': 0.20, 'attn_dropout': 0.15, 'activation_dropout': 0.15},
     "num_layers": 4,
     "use_amp": False,
-    "report_interval": 10,
+    "report_interval": 100000,
     "loss_params": {
         'b1': 'random.uniform',
         'b2': 'random.uniform',
-        'k': 100.0,
-        'eps_closure': 0.1,
-        'eps_disco': 0.1,
-        'alpha_lr': 1e-5
+        'k': args.k,
+        'eps_closure': args.eps_closure,
+        'eps_disco':   args.eps_disco,
+        'alpha_lr':    args.alpha_lr,
         },
     "fc_params": [(64, 0.2)]
     }
@@ -282,8 +286,7 @@ device = f'cuda:{gpus[0]}'
 model.to(device, dtype=torch.float32)
 optimizer = Ranger(model.parameters(), lr=param['init_lr'], weight_decay=1e-2)
 scheduler = StepLR(optimizer, step_size=5, gamma=0.75)
-criterion = ABCD.ABCLagrangian2(
-    param['loss_params']['eps_closure'],
+criterion = ABCD.ABCLagrangian_nocl(
     param['loss_params']['eps_disco'],
     param['loss_params']['k'],
     param['loss_params']['alpha_lr'],
@@ -354,7 +357,8 @@ def train_step(X, batch_num, losses):
         losses[k].append(v)
         if batch_num %param['report_interval'] == 0:
             if use_neptune:
-                run[f"train/{k}"].append(v)
+                pass
+                # run[f"train/{k}"].append(v)
             else:
                 print(f'{k}: {v}')
 
@@ -428,7 +432,8 @@ def validation_step(X, batch_num, losses, p1_bucket, p2_bucket, label_bucket, lo
         losses[k].append(v)
         if batch_num %param['report_interval'] == 0:
             if use_neptune:
-                run[f"{logName}/{k}"].append(v)
+                pass
+                # run[f"{logName}/{k}"].append(v)
             else:
                 print(f'{k}: {v}')
 
@@ -533,30 +538,60 @@ for epoch in range(num_epochs):
 
 
         if use_neptune:
-            isMatched = torch.cat(label_bucket).to(dtype=torch.bool)
-            p1s    = torch.cat(p1_bucket)
-            p2s    = torch.cat(p2_bucket)
+            isMatched = torch.cat(label_bucket).to(dtype=torch.bool).numpy()
+            p1s    = torch.cat(p1_bucket).numpy()
+            p2s    = torch.cat(p2_bucket).numpy()
 
             val_plots.plot_hist1(p1s, isMatched, "p1_hist", run)
             val_plots.plot_hist1(p2s, isMatched, "p2_hist", run)
-            val_plots.plot_hist2(p1s, p2s, isMatched, "p1p2_hist", run)
+            sig_h, bkg_h = val_plots.plot_hist2(p1s, p2s, isMatched, "p1p2_hist", run)
+            sig_counts, xedges, yedges = sig_h
+            bkg_counts, _, _           = bkg_h
 
-        # ----------- non-closure     -----------
-        if use_neptune:
-            losses   = defaultdict(list)
-            p1_bucket, p2_bucket = [], []
-            label_bucket  = []
-            print('Non-closure check')
-            for batch_num, X in enumerate(nonclLoader):
-                validation_step(X, batch_num, losses, p1_bucket, p2_bucket, label_bucket)
-            
-            isMatched = torch.cat(label_bucket).to(dtype=torch.bool)
-            p1s    = torch.cat(p1_bucket)
-            p2s    = torch.cat(p2_bucket)
+            sig_counts = np.nan_to_num(sig_counts, nan=0.0, posinf=0.0, neginf=0.0)
+            bkg_counts = np.nan_to_num(bkg_counts, nan=0.0, posinf=0.0, neginf=0.0)
 
-            x_thresh = np.linspace(0.5, 1.0, 21)
-            y_thresh = np.linspace(0.5, 1.0, 21)
-            val_plots.plot_only_nonclosure(p1s, p2s, isMatched, x_thresh, y_thresh, "p1p2_hist", run)
+
+            print('sig_counts: ', np.sum(np.isfinite(sig_counts)))
+            print('bkg_counts: ', np.sum(np.isfinite(bkg_counts)))
+
+
+            arr_savedir = os.path.join(cp_dest, "training/arrays")
+            os.makedirs(arr_savedir, exist_ok=True)
+
+            # --- Z scan over thresholds ----------------------------------------------
+            # artifically increase bkg
+            bkg_counts *= 10.0
+
+            bW = 0.025 # bin width
+            x_thresh = np.arange(0.0, 1.0+bW, bW)
+            y_thresh = np.arange(0.0, 1.0+bW, bW)
+
+            Z, Ssum, Bsum = val_plots.scan_Z(
+                sig_counts, bkg_counts, xedges, yedges, x_thresh, y_thresh,
+                rel_unc=0.20, min_bkg=0.50
+            )
+
+            print('Z: ',    np.sum(np.isfinite(Z)))
+            print('Ssum: ', np.sum(np.isfinite(Ssum)))
+            print('Bsum: ', np.sum(np.isfinite(Bsum)))
+
+            save_path = os.path.join(arr_savedir, f"p1p2_Z_epoch{epoch}.npy")
+            np.save(save_path, Z)
+            run[f"Z/p1p2_Z_epoch{epoch}.npy"].upload(save_path)
+            val_plots.plot_significance(Z, x_thresh, y_thresh, "p1p2_Z", run)
+
+            # --- non-closure scan over thresholds ----------------------------------------------
+            for loBound in [0.0, 0.5, 0.8]:
+                x_thresh = np.arange(loBound, 1.0+bW, bW)
+                y_thresh = np.arange(loBound, 1.0+bW, bW)
+
+                noncl, NA, NB, NC, ND = val_plots.scan_nonclosure(bkg_counts, xedges, yedges, x_thresh, y_thresh)
+                save_path = os.path.join(arr_savedir, f"p1p2_noncl_{loBound}_epoch{epoch}.npy")
+                np.save(save_path, noncl)
+                run[f"noncl/p1p2_noncl_{loBound}_epoch{epoch}.npy"].upload(save_path)
+                val_plots.plot_nonclosure(noncl, x_thresh, y_thresh, f"p1p2_noncl_{loBound}", run)
+
             
 
     scheduler.step()
@@ -568,4 +603,3 @@ for epoch in range(num_epochs):
     
 if use_neptune:
     run.stop()
-

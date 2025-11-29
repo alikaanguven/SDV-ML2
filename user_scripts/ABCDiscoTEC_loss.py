@@ -37,14 +37,14 @@ def abcdiscotec_loss(
     y = y_true.float()
 
     # --- classification (either keep both heads, or use logitA = logit1+logit2) ---
-    loss_cls = 0.5 * (
-        F.binary_cross_entropy_with_logits(logit1, y) +
-        F.binary_cross_entropy_with_logits(logit2, y)
-    # )
-    # loss_cls = torch.sqrt(
-    #       (F.binary_cross_entropy_with_logits(logit1, y) +
-    #       F.binary_cross_entropy_with_logits(logit2, y))/2
-)
+    # loss_cls = 0.5 * (
+    #     F.binary_cross_entropy_with_logits(logit1, y) +
+    #     F.binary_cross_entropy_with_logits(logit2, y)
+    #     )
+    loss_cls = torch.sqrt(
+          (F.binary_cross_entropy_with_logits(logit1, y)**2 +
+           F.binary_cross_entropy_with_logits(logit2, y)**2 )/2
+          )
 
     # probabilities for ABCD/DisCo
     s1 = torch.sigmoid(logit1)
@@ -208,4 +208,167 @@ class ABCLagrangian(nn.Module):
     if self._delta_closure is None or self._delta_disco is None:
       return
     self.alpha_closure.add_(self.alpha_lr * self._delta_closure).clamp_(min=0.0)
+    self.alpha_disco.add_(self.alpha_lr * self._delta_disco).clamp_(min=0.0)
+
+
+class ABCLagrangian2(nn.Module):
+  def __init__(self, eps_closure, eps_disco, k, alpha_lr=1e-3, numeric_eps=1e-6):
+    super().__init__()
+    self.eps_closure = float(eps_closure)
+    self.eps_disco   = float(eps_disco)
+    self.k = float(k)
+    self.alpha_lr = float(alpha_lr)
+    self.numeric_eps = float(numeric_eps)
+
+    self.register_buffer("alpha_closure", torch.zeros((), dtype=torch.float32))
+    self.register_buffer("alpha_disco",   torch.zeros((), dtype=torch.float32))
+    self._delta_closure = None
+    self._delta_disco   = None
+
+  def forward(self, logit1, logit2, y_true, b1, b2):
+    y = y_true.to(dtype=logit1.dtype)
+
+    loss_bce = torch.sqrt(
+          (F.binary_cross_entropy_with_logits(logit1, y)**2 +
+           F.binary_cross_entropy_with_logits(logit2, y)**2)/2
+    )
+
+    s1 = torch.sigmoid(logit1)
+    s2 = torch.sigmoid(logit2)
+    bkg = (y_true == 0)
+
+    if s1.numel() >= 2:
+        # disco_all = distance_correlation(s1, s2)
+        disco_all = distance_correlation(logit1, logit2)
+    else:
+        disco_all = logit1.new_zeros(())
+
+    
+
+    # allow scalar or per-sample thresholds; broadcasting will just work
+    b1 = torch.as_tensor(b1, device=s1.device, dtype=s1.dtype)
+    b2 = torch.as_tensor(b2, device=s2.device, dtype=s2.dtype)
+
+    logit_b1 = torch.special.logit(b1)
+    logit_b2 = torch.special.logit(b2)
+
+    H1 = torch.sigmoid(self.k * (logit1 - logit_b1))
+    H2 = torch.sigmoid(self.k * (logit2 - logit_b2))
+
+    A = H1 * H2
+    B = (1 - H1) * H2
+    C = H1 * (1 - H2)
+    D = (1 - H1) * (1 - H2)
+
+    NA_b = A[bkg].sum()
+    NB_b = B[bkg].sum()
+    NC_b = C[bkg].sum()
+    ND_b = D[bkg].sum()
+
+    nom   = NA_b * ND_b - NB_b * NC_b
+    denom = NA_b * ND_b + NB_b * NC_b + self.numeric_eps
+    loss_closure = (nom / denom) ** 2
+
+    delta_closure = loss_closure - self.eps_closure
+    delta_disco   = disco_all    - self.eps_disco   # single constraint, no special factor
+
+    loss = loss_bce + self.alpha_closure * delta_closure + self.alpha_disco * delta_disco
+
+    self._delta_closure = delta_closure.detach()
+    self._delta_disco   = delta_disco.detach()
+    return loss, {
+    'loss':             float(loss.detach()),
+    'loss_bce':         float(loss_bce.detach()),
+    'disco_all':        float(disco_all.detach()),
+    'loss_closure':     float(loss_closure.detach()),
+    'alpha_closure':    float(self.alpha_closure.detach()),
+    'alpha_disco':      float(self.alpha_disco.detach()),
+    }
+
+  @torch.no_grad()
+  def dual_ascent(self):
+    if self._delta_closure is None or self._delta_disco is None:
+      return
+    self.alpha_closure.add_(self.alpha_lr * self._delta_closure).clamp_(min=0.0)
+    self.alpha_disco.add_(self.alpha_lr * self._delta_disco).clamp_(min=0.0)
+
+
+
+
+
+# ------------ no closure version ------------
+
+
+class ABCLagrangian_nocl(nn.Module):
+  def __init__(self, eps_disco, k, alpha_lr=1e-3, numeric_eps=1e-6):
+    super().__init__()
+    self.eps_disco   = float(eps_disco)
+    self.k = float(k)
+    self.alpha_lr = float(alpha_lr)
+    self.numeric_eps = float(numeric_eps)
+
+    self.register_buffer("alpha_closure", torch.zeros((), dtype=torch.float32))
+    self.register_buffer("alpha_disco",   torch.zeros((), dtype=torch.float32))
+    self._delta_disco   = None
+
+  def forward(self, logit1, logit2, y_true, b1, b2):
+    y = y_true.to(dtype=logit1.dtype)
+
+    loss_bce = torch.sqrt(
+          (F.binary_cross_entropy_with_logits(logit1, y)**2 +
+           F.binary_cross_entropy_with_logits(logit2, y)**2)/2
+    )
+
+    s1 = torch.sigmoid(logit1)
+    s2 = torch.sigmoid(logit2)
+    bkg = (y_true == 0)
+
+    if s1.numel() >= 2:
+        # disco_all = distance_correlation(s1, s2)
+        disco_all = distance_correlation(logit1, logit2)
+    else:
+        disco_all = logit1.new_zeros(())
+
+    
+
+    # allow scalar or per-sample thresholds; broadcasting will just work
+    b1 = torch.as_tensor(b1, device=s1.device, dtype=s1.dtype)
+    b2 = torch.as_tensor(b2, device=s2.device, dtype=s2.dtype)
+
+    logit_b1 = torch.special.logit(b1)
+    logit_b2 = torch.special.logit(b2)
+
+    H1 = torch.sigmoid(self.k * (logit1 - logit_b1))
+    H2 = torch.sigmoid(self.k * (logit2 - logit_b2))
+
+    A = H1 * H2
+    B = (1 - H1) * H2
+    C = H1 * (1 - H2)
+    D = (1 - H1) * (1 - H2)
+
+    NA_b = A[bkg].sum()
+    NB_b = B[bkg].sum()
+    NC_b = C[bkg].sum()
+    ND_b = D[bkg].sum()
+
+    nom   = NA_b * ND_b - NB_b * NC_b
+    denom = NA_b * ND_b + NB_b * NC_b + self.numeric_eps
+    loss_closure = (nom / denom) ** 2
+
+    delta_disco   = disco_all    - self.eps_disco   # single constraint, no special factor
+
+    loss = loss_bce + self.alpha_disco * delta_disco
+
+    self._delta_disco   = delta_disco.detach()
+    return loss, {
+    'loss':             float(loss.detach()),
+    'loss_bce':         float(loss_bce.detach()),
+    'disco_all':        float(disco_all.detach()),
+    'loss_closure':     float(loss_closure.detach()),
+    'alpha_disco':      float(self.alpha_disco.detach()),
+    }
+
+  @torch.no_grad()
+  def dual_ascent(self):
+    if self._delta_disco is None: return
     self.alpha_disco.add_(self.alpha_lr * self._delta_disco).clamp_(min=0.0)

@@ -2,8 +2,8 @@
 import os, glob, subprocess, shutil
 import ROOT
 
-SRC_BASE   = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_nano"
-DST_BASE   = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_nano_merged"
+SRC_BASE   = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/CustomNanoAOD_GNNAVRIVF_new2"
+DST_BASE   = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/CustomNanoAOD_GNNAVRIVF_new2_merged"
 
 CHUNK_GB   = 4.0
 CHUNK_BYTES= int(CHUNK_GB * 1024**3)
