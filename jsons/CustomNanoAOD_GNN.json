@@ -1,0 +1,14 @@
+{
+    "CustomNanoAOD_GNN": {
+        "dir": {
+            "met2018d": "/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_nano_data/met2018d/output", 
+            "met2018a": "/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_nano_data/met2018a/output", 
+            "met2018c": "/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_nano_data/met2018c/output", 
+            "met2018b": "/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_nano_data/met2018b/output", 
+            "met2018d_rest1": "/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_nano_data/met2018d_rest1/output", 
+            "met2018d_rest2": "/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_nano_data/met2018d_rest2/output", 
+            "met2018d_rest3": "/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_nano_data/met2018d_rest3/output"
+        }, 
+        "dataset": {}
+    }
+}

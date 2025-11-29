@@ -7,7 +7,7 @@ import numpy as np
 import utils.help_preprocess as hp
 
 
-def transform(batch, branch_dict):
+def transform(batch, branch_dict, isData=False):
     """
     Preprocess the input data for training or evaluation.
     
@@ -21,8 +21,16 @@ def transform(batch, branch_dict):
     X = ak.concatenate(batch, axis=0)
     # X = batch[0]
 
-    X['jet0_phi'] = X['Jet_phi'][:, 0]
-    X['jet0_eta'] = X['Jet_eta'][:, 0]
+    # # some events have no jets → Jet_phi[i] == []
+    # jet0_phi = ak.firsts(X['Jet_phi'])
+    # jet0_eta = ak.firsts(X['Jet_eta'])
+
+    # # turn None into NaN so later torch code doesn't choke
+    # jet0_phi = ak.fill_none(jet0_phi, np.nan)
+    # jet0_eta = ak.fill_none(jet0_eta, np.nan)
+
+    # X['jet0_phi'] = jet0_phi
+    # X['jet0_eta'] = jet0_eta
     
     Jet_isTight = ak.values_astype(X['Jet_jetId'] & (1 << 1), bool)
     jet_sel_vetomapsel = (Jet_isTight &
@@ -100,7 +108,8 @@ def transform(batch, branch_dict):
                                          # torch.abs(X["jet0_eta"] - X["SDVSecVtx_L_eta"]),
                                          ), dim=0).permute(1,0)[..., np.newaxis]
 
-    out_dict["label"] = X['SDVSecVtx_matchedLLPnDau_bydau'].permute(1,0)
+    if not isData:
+        out_dict["label"] = X['SDVSecVtx_matchedLLPnDau_bydau'].permute(1,0)
     
     torch.nan_to_num(out_dict["tk_pair_features"], nan=-9.9, out=out_dict["tk_pair_features"])
     torch.nan_to_num(out_dict["tk_features"],      nan=-9.9, out=out_dict["tk_features"])

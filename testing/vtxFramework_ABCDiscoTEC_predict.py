@@ -40,7 +40,7 @@ parser = argparse.ArgumentParser("ParT predict")
 parser.add_argument("inputdir",  help="Give us the input directory my precious.",  type=str)
 parser.add_argument("model_path", help="Give us the model name my precious.",      type=str)
 parser.add_argument("-o", "--outputdir", default=None, help="Give us the output directory my precious. Defaults to inputdir.")
-
+parser.add_argument("--isData", action="store_true", help="Show what is about to be run without executing.")
 
 args = parser.parse_args()
 if args.outputdir is None: args.outputdir = args.inputdir
@@ -58,9 +58,8 @@ files = glob.glob(f'{INPUTDIR}/**/*.root', recursive=True)
 testList = files
 
 
-branchDict = get_branchDict()
-
-preprocess_fn = partial(preprocess.transform, branch_dict=branchDict)
+branchDict = get_branchDict(args.isData)
+preprocess_fn = partial(preprocess.transform, branch_dict=branchDict, isData=args.isData)
 
 
 shuffle = False
@@ -124,14 +123,17 @@ with torch.no_grad():
             tk_mask          = X["tk_mask"]
             sv_features      = X["sv_features"]
             
-            y =  (X['label'].squeeze(-1) > 1).long()
+            if not args.isData:
+                y =  (X['label'].squeeze(-1) > 1).long()
             
 
             tk_pair_features = tk_pair_features.to(device, dtype=torch.float32, non_blocking=True)
             tk_features      = tk_features.to(device,      dtype=torch.float32, non_blocking=True)
             tk_mask          = tk_mask.to(device,          dtype=torch.bool,  non_blocking=True)
             sv_features      = sv_features.to(device,      dtype=torch.float32, non_blocking=True)
-            y                = y.to(device,                dtype=torch.float32, non_blocking=True)       
+
+            if not args.isData:
+                y            = y.to(device,                dtype=torch.float32, non_blocking=True)       
 
 
             output = model(x=tk_features,

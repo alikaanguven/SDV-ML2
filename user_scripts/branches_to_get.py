@@ -1,4 +1,4 @@
-def get_branchDict():
+def get_branchDict(isData=False):
     branchDict = {}
     branchDict['ev'] = ['MET_phi',
                         'MET_pt',
@@ -45,7 +45,10 @@ def get_branchDict():
                         'Jet_muonIdx2'
                         ]
 
-    branchDict['label'] = ['SDVSecVtx_matchedLLPnDau_bydau']
+    if isData:
+        branchDict['label'] = []
+    else:
+        branchDict['label'] = ['SDVSecVtx_matchedLLPnDau_bydau']
 
 
     return branchDict
