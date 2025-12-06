@@ -211,6 +211,190 @@ class ABCLagrangian(nn.Module):
     self.alpha_disco.add_(self.alpha_lr * self._delta_disco).clamp_(min=0.0)
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------
+
+
+
+def select_leading_vertices(logit1, logit2, event_idx, y_true, tol=1e-8):
+    """
+    Select exactly one leading vertex per event:
+      - p1 = sigmoid(logit1), p2 = sigmoid(logit2)
+      - score = p1 * p2
+      - leading vertex = argmax(score) per event
+        (ties broken by smallest global index)
+    Works fully columnar via scatter_reduce_, no Python loop.
+    """
+    # Flatten to 1D
+    logit1    = logit1.view(-1)
+    logit2    = logit2.view(-1)
+    y_true    = y_true.view(-1)
+    ev_flat   = event_idx.view(-1).long()
+
+    device = logit1.device
+    dtype  = logit1.dtype
+
+    # Per-vertex probabilities and scores
+    p1 = torch.sigmoid(logit1)
+    p2 = torch.sigmoid(logit2)
+    scores = p1 * p2  # [N_vtx]
+
+    # Map arbitrary event IDs -> [0 .. num_unique_events-1]
+    _, inv = torch.unique(ev_flat, return_inverse=True)
+    num_unique_events = int(inv.max().item()) + 1  # or len(unique_ids)
+
+    # 1) Max score per event
+    neg_inf = torch.tensor(float("-inf"), device=device, dtype=scores.dtype)
+    max_scores = torch.full((num_unique_events,), neg_inf,
+                            device=device, dtype=scores.dtype)
+    max_scores.scatter_reduce_(
+        dim=0,
+        index=inv,
+        src=scores,
+        reduce="amax",
+        include_self=True,
+    )
+
+    # 2) Mark all vertices that are "close enough" to the max of their event
+    max_scores_broad = max_scores[inv]              # [N_vtx], per-vertex event max
+    is_candidate = scores >= (max_scores_broad - tol)
+
+    # 3) Among candidates, pick the smallest global index per event
+    N   = scores.numel()
+    idx = torch.arange(N, device=device)
+
+    big = torch.tensor(N, device=device, dtype=idx.dtype)  # sentinel
+    idx_masked = torch.where(is_candidate, idx, big)
+
+    lead_idx = torch.full((num_unique_events,), big,
+                          device=device, dtype=idx.dtype)
+    lead_idx.scatter_reduce_(
+        dim=0,
+        index=inv,
+        src=idx_masked,
+        reduce="amin",        # smallest index among candidates
+        include_self=True,
+    )
+
+    # 4) Gather leading-vertex quantities (exactly one per event)
+    logit1_lead = logit1[lead_idx]
+    logit2_lead = logit2[lead_idx]
+    y_lead      = y_true[lead_idx]
+
+    return logit1_lead, logit2_lead, y_lead
+
+
+
+
+class ABCLagrangian2_EventLevel(nn.Module):
+    def __init__(self, eps_closure, eps_disco, k, alpha_lr=1e-3, numeric_eps=1e-6):
+        super().__init__()
+        self.eps_closure = float(eps_closure)
+        self.eps_disco   = float(eps_disco)
+        self.k = float(k)
+        self.alpha_lr = float(alpha_lr)
+        self.numeric_eps = float(numeric_eps)
+
+        self.register_buffer("alpha_closure", 0.1 * torch.ones((), dtype=torch.float32))
+        self.register_buffer("alpha_disco",   0.1 * torch.ones((), dtype=torch.float32))
+        self._delta_closure = None
+        self._delta_disco   = None
+
+    def forward(self, logit1, logit2, y_true, event_idx, b1, b2):
+        """
+        Inputs:
+            logit1, logit2: [N, 1]
+            y_true:         [N, 1]
+            event_idx:      [N, 1] 
+        """
+        # Ensure y matches logit dtype
+        y = y_true.to(dtype=logit1.dtype)
+
+        # --- Part A: Vertex-Level BCE Loss ---
+        # Calculated on ALL vertices (shape [N, 1])
+        loss_bce = torch.sqrt(
+              (F.binary_cross_entropy_with_logits(logit1, y)**2 +
+               F.binary_cross_entropy_with_logits(logit2, y)**2)/2
+        )
+
+        # --- Part B: Event-Level Selection ---
+        # This reduces data from N vertices -> M events
+        l1_lead, l2_lead, y_lead = select_leading_vertices(logit1, logit2, event_idx, y_true)
+
+        # --- Part C: Event-Level Closure & Disco ---
+        # Calculated ONLY on the leading vertices (shape [M, 1])
+        
+        s1_lead = torch.sigmoid(l1_lead)
+        s2_lead = torch.sigmoid(l2_lead)
+        # Flatten y_lead for boolean indexing: [M, 1] -> [M]
+        bkg_mask_lead = (y_lead.view(-1) == 0) 
+
+        # 1. Distance Correlation (Disco)
+        if s1_lead.numel() >= 2:
+            disco_all = distance_correlation(l1_lead, l2_lead)
+        else:
+            disco_all = l1_lead.new_zeros(())
+
+        # 2. Closure Loss
+        # Ensure thresholds match device/dtype
+        b1 = torch.as_tensor(b1, device=s1_lead.device, dtype=s1_lead.dtype)
+        b2 = torch.as_tensor(b2, device=s1_lead.device, dtype=s1_lead.dtype)
+        
+        # logit_b1 = torch.special.logit(b1)
+        # logit_b2 = torch.special.logit(b2)
+
+        # Soft binning (sigmoid approximation of step function)
+        H1 = torch.sigmoid(self.k * (s1_lead - b1))
+        H2 = torch.sigmoid(self.k * (s2_lead - b2))
+
+        # Regions A, B, C, D
+        A = H1 * H2
+        B = (1 - H1) * H2
+        C = H1 * (1 - H2)
+        D = (1 - H1) * (1 - H2)
+
+        # Sum over BACKGROUND events only
+        # We use .view(-1) on regions to match bkg_mask_lead shape
+        NA_b = A.view(-1)[bkg_mask_lead].sum()
+        NB_b = B.view(-1)[bkg_mask_lead].sum()
+        NC_b = C.view(-1)[bkg_mask_lead].sum()
+        ND_b = D.view(-1)[bkg_mask_lead].sum()
+
+        nom   = NA_b * ND_b - NB_b * NC_b
+        denom = NA_b * ND_b + NB_b * NC_b + self.numeric_eps
+        loss_closure = (nom / denom) ** 2
+
+
+
+        # 3. Lagrangian constraints
+        delta_closure = loss_closure - self.eps_closure
+        delta_disco   = disco_all    - self.eps_disco
+
+        # Total Loss
+        loss = loss_bce + self.alpha_closure * delta_closure + self.alpha_disco * delta_disco
+
+        # Store for dual ascent
+        self._delta_closure = delta_closure.detach()
+        self._delta_disco   = delta_disco.detach()
+
+        return loss, {
+            'loss':             float(loss.detach()),
+            'loss_bce':         float(loss_bce.detach()),
+            'disco_all':        float(disco_all.detach()),
+            'loss_closure':     float(loss_closure.detach()),
+            'alpha_closure':    float(self.alpha_closure.detach()),
+            'alpha_disco':      float(self.alpha_disco.detach()),
+        }
+
+    @torch.no_grad()
+    def dual_ascent(self):
+        if self._delta_closure is None or self._delta_disco is None:
+            return
+        self.alpha_closure.add_(self.alpha_lr * self._delta_closure).clamp_(min=0.0)
+        self.alpha_disco.add_(self.alpha_lr * self._delta_disco).clamp_(min=0.0)
+
+
+
 class ABCLagrangian2(nn.Module):
   def __init__(self, eps_closure, eps_disco, k, alpha_lr=1e-3, numeric_eps=1e-6):
     super().__init__()

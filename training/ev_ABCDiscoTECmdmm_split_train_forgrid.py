@@ -13,7 +13,7 @@ import numpy as np
 # from sklearn.metrics import roc_auc_score
 
 from collections import defaultdict
-
+import copy
 
 
 import networks.ParT_ABCDiscoTEC_split as ParT
@@ -134,26 +134,42 @@ valDict = {
 #     'bkg': None
 # }
 
-branchDict = get_branchDict()
+branchDict_dataset    = get_branchDict()
+
 
 shuffle = False
 nWorkers = 4
 
 
-base_step_size = 4000
+base_step_size = 3000 # 4000
 step_size = base_step_size # * len(gpus)
 
 
-preprocess_fn = partial(preprocess.transform, branch_dict=branchDict)
-
-
-prefetch_factor = 16
-
 trainDataset = ModifiedUprootIterator(trainDict,
-                                      branchDict,
+                                      branchDict_dataset,
                                       shuffle=shuffle,
                                       nWorkers=nWorkers,
                                       step_size=step_size)
+
+valDataset = ModifiedUprootIterator(valDict, 
+                                    branchDict_dataset,
+                                    shuffle=shuffle,
+                                    nWorkers=nWorkers,
+                                    step_size=step_size)
+
+# Create the iterator first, THEN call next
+iterator = iter(trainDataset) 
+X = next(iterator)
+
+# Create the iterator first, THEN call next
+iterator = iter(valDataset) 
+X = next(iterator)
+
+
+prefetch_factor = 16
+branchDict_dataloader = copy.deepcopy(branchDict_dataset)
+branchDict_dataloader['ev'].append('event_idx')
+preprocess_fn = partial(preprocess.transform, branch_dict=branchDict_dataloader)
 
 trainLoader = torch.utils.data.DataLoader(trainDataset, 
                                           num_workers=nWorkers,
@@ -162,13 +178,6 @@ trainLoader = torch.utils.data.DataLoader(trainDataset,
                                           collate_fn=preprocess_fn,
                                           drop_last=True, 
                                           pin_memory=True)
-
-
-valDataset = ModifiedUprootIterator(valDict, 
-                                    branchDict,
-                                    shuffle=shuffle,
-                                    nWorkers=nWorkers,
-                                    step_size=step_size)
 
 valLoader = torch.utils.data.DataLoader(valDataset,
                                         num_workers=nWorkers,
@@ -190,7 +199,7 @@ _prewarm(valLoader,   1)
 
 input_shapes = probe_shapes(ModifiedUprootIterator,
                             trainDict,
-                            branchDict,
+                            get_branchDict(),
                             preprocess_fn,
                             step_size=step_size)
 
@@ -285,11 +294,12 @@ device = f'cuda:{gpus[0]}'
 
 model.to(device, dtype=torch.float32)
 optimizer = Ranger(model.parameters(), lr=param['init_lr'], weight_decay=1e-2)
-scheduler = StepLR(optimizer, step_size=5, gamma=0.75)
-criterion = ABCD.ABCLagrangian_nocl(
-    param['loss_params']['eps_disco'],
-    param['loss_params']['k'],
-    param['loss_params']['alpha_lr'],
+scheduler = StepLR(optimizer, step_size=12, gamma=0.75)
+criterion = ABCD.ABCLagrangian2_EventLevel(
+    eps_closure=param['loss_params']['eps_closure'],
+    eps_disco=param['loss_params']['eps_disco'],
+    k=param['loss_params']['k'],
+    alpha_lr=param['loss_params']['alpha_lr']
 ).to(device)
 
 
@@ -334,11 +344,10 @@ def train_step(X, batch_num, losses):
 
     logit1 = output['logit1'].squeeze(-1)
     logit2 = output['logit2'].squeeze(-1)
+    
+    event_idx = X['event_idx'].to(device, dtype=torch.float32, non_blocking=True)
 
-    # print('logit1.shape: ', logit1.shape)
-    # print('logit2.shape: ', logit2.shape)
-    # print('y.shape: ', y.shape)
-
+    
     if (param['loss_params']['b1'] == 'random.uniform') and (param['loss_params']['b2'] == 'random.uniform'):
         b1 = np.random.uniform(0.01, 0.99)
         b2 = np.random.uniform(0.01, 0.99)
@@ -350,7 +359,7 @@ def train_step(X, batch_num, losses):
         b1 = param['loss_params']['b1']
         b2 = param['loss_params']['b2']
 
-    loss, someLogs = criterion(logit1, logit2, y, b1, b2)
+    loss, someLogs = criterion(logit1, logit2, y, event_idx, b1, b2)
     
 
     for k, v in someLogs.items():
@@ -406,6 +415,8 @@ def validation_step(X, batch_num, losses, p1_bucket, p2_bucket, label_bucket, lo
     logit1 = output['logit1'].squeeze(-1)
     logit2 = output['logit2'].squeeze(-1)
 
+    event_idx = X['event_idx'].to(device, dtype=torch.float32, non_blocking=True)
+
     if (param['loss_params']['b1'] == 'random.uniform') and (param['loss_params']['b2'] == 'random.uniform'):
         b1 = np.random.uniform(0.01, 0.99)
         b2 = np.random.uniform(0.01, 0.99)
@@ -417,14 +428,15 @@ def validation_step(X, batch_num, losses, p1_bucket, p2_bucket, label_bucket, lo
         b1 = param['loss_params']['b1']
         b2 = param['loss_params']['b2']
 
-    loss, someLogs = criterion(logit1, logit2, y, b1, b2)
+    loss, someLogs = criterion(logit1, logit2, y, event_idx, b1, b2)
+    logit1_lead, logit2_lead, y_lead = ABCD.select_leading_vertices(logit1, logit2, event_idx, y, tol=1e-8)
 
-    p1 = torch.sigmoid(logit1)
-    p2 = torch.sigmoid(logit2)
+    p1 = torch.sigmoid(logit1_lead)
+    p2 = torch.sigmoid(logit2_lead)
 
     p1_bucket.append(p1.detach().cpu())
     p2_bucket.append(p2.detach().cpu())
-    label_bucket.append(y.detach().cpu())
+    label_bucket.append(y_lead.detach().cpu())
 
 
 
@@ -446,7 +458,7 @@ def validation_step(X, batch_num, losses, p1_bucket, p2_bucket, label_bucket, lo
 
 
 
-num_epochs = 200
+num_epochs = 400
 
 
 class_weights_tensor = torch.tensor(param['class_weights']).to(device, dtype=torch.float32)

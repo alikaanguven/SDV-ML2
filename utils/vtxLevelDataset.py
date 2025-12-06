@@ -5,9 +5,7 @@ import numpy as np
 import awkward as ak
 import uproot
 import torch
-
 from numba import njit
-
 
 def superbatch_iterator(files, keys, superbatch_size=1024*100):
     """
@@ -55,119 +53,136 @@ def superbatch_iterator(files, keys, superbatch_size=1024*100):
 
 
 
+
+
 class ModifiedUprootIterator(torch.utils.data.IterableDataset):
     def __init__(self, files, branches, shuffle=False, nWorkers=1, step_size=100):
-        """
-        Parameters
-        ----------
-        files : dict
-                keys: "sig", "bkg"
-                values: ['path_to_file:Events', ...]
-        branches : dict
-                dict of branches in TTree.
-                keys should be ev, sv, tk.
-                values should be of type list.
-        nWorkers : int
-                Files will be divided among the workers.
-                Therefore, nWorkers determines number of divisions.
-                nWorkers=0 will be treated as nWorkers=1.
-        step_size : int
-                number of Events to be read from the files at each iteration.
-        """
-        
-        print('Initialize iterable dataset')
+        print('Initialize iterable dataset (Main Process)')
         self.files = files
         self.branches = branches
-
+        # Flatten branches
         self.branchList = [b for key, value in branches.items() if value is not None for b in value]
         
         self.step_size = step_size
-        self.nWorkers = max(nWorkers, 1)
         self.shuffle = shuffle
-        print('nWorkers: ', self.nWorkers)
         
-        if self.shuffle:
-            random.shuffle(self.files['sig'])
-            if self.files['bkg']:
-                random.shuffle(self.files['bkg'])
+        # We don't create iterators or split files here anymore.
+        # We just store the raw configuration.
+        self.sig_iterator = None
+        self.bkg_iterator = None
+        
+        self._global_event_counter = 0
 
-        if self.files['bkg']:
-            self.workerBkgList = self._distribute_files(self.files['bkg'])
+    def _get_worker_slice(self, file_list):
+        """Helper to slice files for the current worker."""
+        worker_info = torch.utils.data.get_worker_info()
+        
+        if worker_info is None:
+            # Single process mode: return all files
+            return file_list
         else:
-            self.workerBkgList = None
-        self.workerSigList = self._copy_files(self.files['sig'], shuffle=self.shuffle)
-
-        self.SigIteratorList = None
-        self.BkgIteratorList = None
-        self._refresh_iterators()
-        
-        self.x = None
-        self.xSig = None
-        self.xBkg = None
-
-    
-    def _distribute_files(self, files):
-        return [[files[i] for i in range(len(files)) if i % self.nWorkers == worker_id] for worker_id in range(self.nWorkers)]
-
-    def _copy_files(self, files, shuffle=True):
-        workerList = []
-        for worker_info_id in range(self.nWorkers):
-            files_copy = copy.copy(files)
-            if shuffle: random.shuffle(files_copy)
-            workerList.append(files_copy)
-        return workerList
-        
-    def _refresh_iterators(self, shuffle=False):
-        self.workerSigList = self._copy_files(self.files['sig'], shuffle=shuffle)
-        self.SigIteratorList = [superbatch_iterator(workerFiles, self.branchList, superbatch_size=self.step_size) for workerFiles in self.workerSigList]
-        if self.workerBkgList:
-            self.BkgIteratorList = [superbatch_iterator(workerFiles, self.branchList, superbatch_size=self.step_size) for workerFiles in self.workerBkgList]
-        else:
-            self.BkgIteratorList = None
+            # Multi-process mode:
+            # Worker 0 gets index 0, 4, 8...
+            # Worker 1 gets index 1, 5, 9...
+            per_worker = int(np.ceil(len(file_list) / float(worker_info.num_workers)))
+            worker_id = worker_info.id
+            
+            # Simple slicing (stride) is the easiest way to shard
+            return file_list[worker_id::worker_info.num_workers]
 
     def __iter__(self):
-        print('__iter__ is called.')
-        if self.step_size <200: 
+        print('__iter__ is called (inside a Worker).')
+        
+        # 1. Identify which files belong to THIS worker
+        my_sig_files = self._get_worker_slice(self.files['sig'])
+        
+        if self.files.get('bkg'):
+            my_bkg_files = self._get_worker_slice(self.files['bkg'])
+        else:
+            my_bkg_files = None
+
+        # 2. Shuffle locally if requested
+        if self.shuffle:
+            random.shuffle(my_sig_files)
+            if my_bkg_files:
+                random.shuffle(my_bkg_files)
+
+        # 3. Create the iterators JUST for this worker
+        # Note: We create a fresh iterator every epoch (every time __iter__ is called)
+        self.sig_iterator = superbatch_iterator(my_sig_files, self.branchList, superbatch_size=self.step_size)
+        
+        if my_bkg_files:
+            self.bkg_iterator = superbatch_iterator(my_bkg_files, self.branchList, superbatch_size=self.step_size)
+        else:
+            self.bkg_iterator = None
+            
+        # 4. Handle Step Size warmup
+        if self.step_size < 200: 
             self.step_size += 25
-            print('step_size is increased to ', self.step_size)
-        self._refresh_iterators(shuffle=self.shuffle)
+            print(f'Worker {torch.utils.data.get_worker_info().id if torch.utils.data.get_worker_info() else 0}: step_size -> {self.step_size}')
+
         return self
 
-    def update_step_size(self, new_step_size):
-        self.step_size = new_step_size
-
-    
     def __next__(self):
-        worker_info = torch.utils.data.get_worker_info()
-        worker_id = worker_info.id if worker_info else 0
+        # We no longer need to look up worker_id lists.
+        # We just use the local iterators created in __iter__
 
-        if self.BkgIteratorList:
-            self.xBkg = next(self.BkgIteratorList[worker_id])
+        if self.bkg_iterator:
+            xBkg = next(self.bkg_iterator)
+            
+            # Handle Signal Exhaustion (Signal is often smaller than Background)
             try:
-                self.xSig = next(self.SigIteratorList[worker_id])
+                xSig = next(self.sig_iterator)
             except StopIteration:
-                print(f'Worker {worker_id}s SigIteratorList is exhausted. Loading again.')
-                self.SigIteratorList[worker_id] = superbatch_iterator(self.workerSigList[worker_id], self.branchList, superbatch_size=self.step_size)
-                self.xSig = next(self.SigIteratorList[worker_id])
-            self.x = ak.concatenate([self.xBkg, self.xSig])
+                # If signal runs out, reload/restart it for this worker
+                worker_info = torch.utils.data.get_worker_info()
+                wid = worker_info.id if worker_info else 0
+                print(f'Worker {wid}: Signal exhausted. Looping signal.')
+                
+                # Re-init signal iterator
+                my_sig_files = self._get_worker_slice(self.files['sig'])
+                if self.shuffle: random.shuffle(my_sig_files)
+                self.sig_iterator = superbatch_iterator(my_sig_files, self.branchList, superbatch_size=self.step_size)
+                xSig = next(self.sig_iterator)
+            
+            self.x = ak.concatenate([xBkg, xSig])
         else:
-            self.xSig = next(self.SigIteratorList[worker_id])
-            self.x = self.xSig
+            self.x = next(self.sig_iterator)
 
         if self.shuffle:
             self.x = self._shuffle_akArr(self.x)
+            
         self._add_four_vector_branches()
+        self._add_event_index_branch()
+        
         return self.x
 
+    def _add_event_index_branch(self):
+        """
+        Create unique event IDs.
+        To ensure uniqueness across workers, we can combine WorkerID and Counter.
+        """
+        n_events = len(self.x)
+        
+        worker_info = torch.utils.data.get_worker_info()
+        worker_id = worker_info.id if worker_info else 0
+        
+        # Create a unique ID: WorkerID * 100 Billion + Counter
+        # This ensures Worker 0 has 0...100, Worker 1 has 100000000000...
+        base_id = (worker_id * 100_000_000_000) + self._global_event_counter
+        
+        evt_idx = ak.Array(np.arange(base_id, base_id + n_events, dtype=np.int64))
+        self.x["event_idx"] = evt_idx
+        
+        self._global_event_counter += n_events
 
     def _shuffle_akArr(self, x):
-        """ Shuffle awkward array. """
         idx = np.arange(len(x))
         np.random.shuffle(idx)
         return x[idx]
-
-    
+        
     def _add_four_vector_branches(self):
+        # (Your existing logic here remains unchanged)
         if all(x in self.branchList for x in ['SDVTrack_pt', 'SDVTrack_eta', 'SDVTrack_phi']) and \
            any(x not in self.branchList for x in ['SDVTrack_E', 'SDVTrack_px', 'SDVTrack_py', 'SDVTrack_pz']):
             

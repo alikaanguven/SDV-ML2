@@ -62,9 +62,8 @@ def transform(batch, branch_dict, isData=False):
 
     # ------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------
+
     for key in X.keys(): X[key] = X[key].unsqueeze(0)
-
-
 
 
     out_dict["tk_pair_features"] = torch.cat((X['SDVTrack_px'],
@@ -110,6 +109,8 @@ def transform(batch, branch_dict, isData=False):
 
     if not isData:
         out_dict["label"] = X['SDVSecVtx_matchedLLPnDau_bydau'].permute(1,0)
+
+    out_dict['event_idx'] = X['event_idx'].permute(1,0)
     
     torch.nan_to_num(out_dict["tk_pair_features"], nan=-9.9, out=out_dict["tk_pair_features"])
     torch.nan_to_num(out_dict["tk_features"],      nan=-9.9, out=out_dict["tk_features"])

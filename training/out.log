@@ -1,342 +1,914 @@
-Initialize iterable dataset
-nWorkers:  6
-Initialize iterable dataset
-nWorkers:  6
-Initialize iterable dataset
-nWorkers:  1
-__iter__ is called.
-[neptune] [info   ] Neptune initialized. Open in the app: https://app.neptune.ai/alikaan.guven/ParT/e/PART-496
-heads_share_params? False
+nohup: ignoring input
+/groups/hephy/cms/alikaan.gueven/conda/envs/SDV/lib/python3.11/site-packages/pandas/core/computation/expressions.py:21: UserWarning: Pandas requires version '2.8.4' or newer of 'numexpr' (version '2.8.3' currently installed).
+  from pandas.core.computation.check import NUMEXPR_INSTALLED
+Initialize iterable dataset (Main Process)
+Initialize iterable dataset (Main Process)
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Initialize iterable dataset (Main Process)
+__iter__ is called (inside a Worker).
+[neptune] [info   ] Neptune initialized. Open in the app: https://app.neptune.ai/alikaan.guven/ParT/e/PART-911
 CPU count:  28
-Total params        : 1,509,714
-  Trainable         : 1,509,714
-    • weights       : 1,197,932
-    • biases        : 13,622
+Total params        : 2,986,930
+  Trainable         : 2,986,930
+    • weights       : 2,363,488
+    • biases        : 27,122
   Non-trainable     : 0
 
 Epoch  0
 Starting train...
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [train]
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+/groups/hephy/cms/alikaan.gueven/conda/envs/SDV/lib/python3.11/site-packages/numpy/lib/function_base.py:2455: RuntimeWarning: invalid value encountered in <lambda> (vectorized)
+  outputs = ufunc(*inputs)
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  1
 Starting train...
-__iter__ is called.__iter__ is called.
-__iter__ is called.
-
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [train]
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  2
 Starting train...
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+
+__iter__ is called (inside a Worker).
 Started batch processes. [train]
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.__iter__ is called.
-
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  3
 Starting train...
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
 
+__iter__ is called (inside a Worker).
 Started batch processes. [train]
-[neptune] [warning] Experiencing connection interruptions. Will try to reestablish communication with Neptune. Internal exception was: HTTPServiceUnavailable
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+
 Started batch processes. [validation]
-[neptune] [info   ] Communication with Neptune restored!
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  4
 Starting train...
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [train]
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  5
 Starting train...
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.__iter__ is called.
-__iter__ is called.
-
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [train]
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.__iter__ is called.
-
-__iter__ is called.__iter__ is called.
-__iter__ is called.
-
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  6
 Starting train...
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [train]
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.
-__iter__ is called.__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
 
-__iter__ is called.__iter__ is called.
-
-__iter__ is called.
 Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  7
 Starting train...
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
 
+__iter__ is called (inside a Worker).
 Started batch processes. [train]
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
 Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  8
 Starting train...
-__iter__ is called.
-__iter__ is called.__iter__ is called.
-
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [train]
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.__iter__ is called.
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+
 Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  9
 Starting train...
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.__iter__ is called.__iter__ is called.
-
-
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [train]
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.__iter__ is called.
-
-__iter__ is called.
-__iter__ is called.__iter__ is called.
-__iter__ is called.
-
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  10
 Starting train...
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.__iter__ is called.
-
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [train]
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.__iter__ is called.
-
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.__iter__ is called.
-
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  11
 Starting train...
-__iter__ is called.
-__iter__ is called.__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
 Started batch processes. [train]
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.__iter__ is called.
-
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  12
 Starting train...
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [train]
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.__iter__ is called.
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
 
-__iter__ is called.__iter__ is called.
-
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  13
 Starting train...
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
 Started batch processes. [train]
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.
-__iter__ is called.__iter__ is called.__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
 
-
-__iter__ is called.
-__iter__ is called.
 Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  14
 Starting train...
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [train]
 
 
 
 Entering validation phase...
 torch.no_grad()
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
-__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
 Epoch  15
 Starting train...
-__iter__ is called.
-__iter__ is called.__iter__ is called.
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
 
-__iter__ is called.__iter__ is called.
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
 
-__iter__ is called.
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  16
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  17
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  18
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  19
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  20
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  21
+Starting train...
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  22
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  23
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  24
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  25
+Starting train...
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  26
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  27
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  28
+Starting train...
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  29
+Starting train...
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  30
+Starting train...
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  31
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  32
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  33
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  34
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  35
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  36
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  37
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  38
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  39
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+Started batch processes. [train]
+
+
+
+Entering validation phase...
+torch.no_grad()
+__iter__ is called (inside a Worker).__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+
+__iter__ is called (inside a Worker).
+Started batch processes. [validation]
+sig_counts:  2500
+bkg_counts:  2500
+Z:  1600
+Ssum:  1600
+Bsum:  1600
+Epoch  40
+Starting train...
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
+__iter__ is called (inside a Worker).
 Started batch processes. [train]

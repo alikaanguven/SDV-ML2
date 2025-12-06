@@ -2,7 +2,7 @@ def get_branchDict(isData=False):
     branchDict = {}
     branchDict['ev'] = ['MET_phi',
                         'MET_pt',
-                        'nSDVSecVtx',
+                        'nSDVSecVtx'
                         ]
 
     branchDict['sv'] = ['SDVSecVtx_pt', 
