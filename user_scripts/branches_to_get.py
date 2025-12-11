@@ -44,6 +44,8 @@ def get_branchDict(isData=False):
                         'Jet_muonIdx1',
                         'Jet_muonIdx2'
                         ]
+    
+    branchDict['filter'] = ['SDVSecVtx_ngoodTrack']
 
     if isData:
         branchDict['label'] = []

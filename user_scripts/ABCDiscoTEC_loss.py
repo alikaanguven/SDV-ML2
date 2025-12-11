@@ -331,9 +331,9 @@ class ABCLagrangian2_EventLevel(nn.Module):
 
         # 1. Distance Correlation (Disco)
         if s1_lead.numel() >= 2:
-            disco_all = distance_correlation(l1_lead, l2_lead)
+            disco_all = distance_correlation(logit1, logit2)
         else:
-            disco_all = l1_lead.new_zeros(())
+            disco_all = logit1.new_zeros(())
 
         # 2. Closure Loss
         # Ensure thresholds match device/dtype
@@ -353,16 +353,72 @@ class ABCLagrangian2_EventLevel(nn.Module):
         C = H1 * (1 - H2)
         D = (1 - H1) * (1 - H2)
 
+        # ORIGINAL IMPLEMENTATION
+        # ------------------------
+        # # Sum over BACKGROUND events only
+        # # We use .view(-1) on regions to match bkg_mask_lead shape
+        # NA_b = A.view(-1)[bkg_mask_lead].sum()
+        # NB_b = B.view(-1)[bkg_mask_lead].sum()
+        # NC_b = C.view(-1)[bkg_mask_lead].sum()
+        # ND_b = D.view(-1)[bkg_mask_lead].sum()
+        #
+        # nom   = NA_b * ND_b - NB_b * NC_b
+        # denom = NA_b * ND_b + NB_b * NC_b + self.numeric_eps
+        # loss_closure = (nom / denom) ** 2
+
+        # TEST -1 sigma closure loss
         # Sum over BACKGROUND events only
-        # We use .view(-1) on regions to match bkg_mask_lead shape
         NA_b = A.view(-1)[bkg_mask_lead].sum()
         NB_b = B.view(-1)[bkg_mask_lead].sum()
         NC_b = C.view(-1)[bkg_mask_lead].sum()
         ND_b = D.view(-1)[bkg_mask_lead].sum()
 
-        nom   = NA_b * ND_b - NB_b * NC_b
-        denom = NA_b * ND_b + NB_b * NC_b + self.numeric_eps
-        loss_closure = (nom / denom) ** 2
+        # --- 1) Nominal closure f ----------------------------------------------
+        num   = NA_b * ND_b - NB_b * NC_b
+        den   = NA_b * ND_b + NB_b * NC_b + self.numeric_eps  # avoid 0
+        f_nom = num / den
+
+        # --- 2) Analytic derivatives df/dN_i -----------------------------------
+        den2 = den * den + self.numeric_eps  # (NA ND + NB NC)^2
+
+        df_dNA =  2.0 * NB_b * NC_b * ND_b / den2
+        df_dNB = -2.0 * NA_b * NC_b * ND_b / den2
+        df_dNC = -2.0 * NA_b * NB_b * ND_b / den2
+        df_dND =  2.0 * NA_b * NB_b * NC_b / den2
+
+        # --- 3) Poisson variances: Var(N_i) = N_i ------------------------------
+        # clamp to avoid negative / zero issues
+        NA_var = NA_b.clamp_min(self.numeric_eps)
+        NB_var = NB_b.clamp_min(self.numeric_eps)
+        NC_var = NC_b.clamp_min(self.numeric_eps)
+        ND_var = ND_b.clamp_min(self.numeric_eps)
+
+        sigma_f_sq = (
+            (df_dNA * df_dNA) * NA_var +
+            (df_dNB * df_dNB) * NB_var +
+            (df_dNC * df_dNC) * NC_var +
+            (df_dND * df_dND) * ND_var
+        )
+
+        sigma_f = torch.sqrt(sigma_f_sq + self.numeric_eps)
+
+        
+
+        # --- 4) -1σ closure and loss -------------------------------------------
+        f_minus1sigma = torch.clamp(f_nom - sigma_f, min=0.0)
+        # loss_closure  = f_minus1sigma * f_minus1sigma
+        loss_closure  = f_nom * f_nom
+        # print('-'*40)
+        # print('NA_b: ', NA_b.item())
+        # print('NB_b: ', NB_b.item())
+        # print('NC_b: ', NC_b.item())
+        # print('ND_b: ', ND_b.item())
+        # print()
+
+        # print('f: ', f_nom.item())
+        # print('sigma_f: ', sigma_f.item())
+        # print('f_minus1sigma: ', f_minus1sigma.item())
+        # print('loss_closure: ', loss_closure.item())
 
 
 

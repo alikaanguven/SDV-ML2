@@ -19,6 +19,16 @@ def transform(batch, branch_dict, isData=False):
     """
     out_dict = {}
     X = ak.concatenate(batch, axis=0)
+
+    # per-vertex mask: same shape as SDVSecVtx_ngoodTrack
+    per_sv_mask = X['SDVSecVtx_ngoodTrack'] >= 1
+
+    # per-event mask: at least one vertex passes
+    event_mask = ak.any(per_sv_mask, axis=1)   # shape: (nEvents,)
+    # event_mask = event_mask & X['nSDVSecVtx'] == 1
+    # apply event-level filter
+    X = X[event_mask]
+
     # X = batch[0]
 
     # # some events have no jets → Jet_phi[i] == []

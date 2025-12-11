@@ -59,6 +59,7 @@ cli.add_argument('--alpha_lr',      type=float, default=1e-5, help='LR to overri
 cli.add_argument('--k',             type=float, default=100,  help='LR to override param["loss_params"]["k"]')
 cli.add_argument('--eps_closure',   type=float, default=1e-2, help='LR to override param["loss_params"]["eps_closure"]')
 cli.add_argument('--eps_disco',     type=float, default=1e-2, help='LR to override param["loss_params"]["eps_disco"]')
+cli.add_argument('--debug', action="store_true", help="Show what is about to be run without executing.")
 args = cli.parse_args()
 
 # ------------------------------------------------------------
@@ -66,10 +67,10 @@ args = cli.parse_args()
 
 hostname = os.uname()[1]
 if 'hepgpu' in hostname:
-    DATA_READ_BASEPATH  = '/scratch/agueven/ParT/datasets'                               # Change here on HEPGPU!!!
-    RUN_SAVE_BASEPATH   = '/scratch/agueven/ParT/runs'                                   # Change here on HEPGPU!!!
-    MODEL_SAVE_BASEPATH = '/scratch/agueven/ParT/models'                                 # Change here on HEPGPU!!!
-    gpus = [2] # normally 2
+    DATA_READ_BASEPATH  = '/scratch/agueven/ParT/datasets'                               
+    RUN_SAVE_BASEPATH   = '/scratch/agueven/ParT/runs'                                   
+    MODEL_SAVE_BASEPATH = '/scratch/agueven/ParT/models'                                 
+    gpus = [0] # normally 2
 elif 'clip' in hostname:
     DATA_READ_BASEPATH  = '/scratch-cbe/users/alikaan.gueven/ML_KAAN'
     RUN_SAVE_BASEPATH   = '/groups/hephy/cms/alikaan.gueven/ParT/runs'
@@ -238,7 +239,7 @@ if (param['loss_params']['b1'].startswith('random')) and (param['loss_params']['
 
 # Log
 ########################################################################
-use_neptune=True
+use_neptune=True if not args.debug else False
 
 from shutil import copytree, ignore_patterns
 
@@ -294,6 +295,7 @@ device = f'cuda:{gpus[0]}'
 
 model.to(device, dtype=torch.float32)
 optimizer = Ranger(model.parameters(), lr=param['init_lr'], weight_decay=1e-2)
+# optimizer = torch.optim.Adam(model.parameters(), lr=param['init_lr'], weight_decay=1e-2)
 scheduler = StepLR(optimizer, step_size=12, gamma=0.75)
 criterion = ABCD.ABCLagrangian2_EventLevel(
     eps_closure=param['loss_params']['eps_closure'],
@@ -323,7 +325,6 @@ def train_step(X, batch_num, losses):
     sv_features      = X["sv_features"]
     
     y =  (X['label'].squeeze(-1) > 1).long()
-    
 
     tk_pair_features = tk_pair_features.to(device, dtype=torch.float32, non_blocking=True)
     tk_features      = tk_features.to(device,      dtype=torch.float32, non_blocking=True)
@@ -399,7 +400,7 @@ def validation_step(X, batch_num, losses, p1_bucket, p2_bucket, label_bucket, lo
 
     tk_pair_features = tk_pair_features.to(device, dtype=torch.float32, non_blocking=True)
     tk_features      = tk_features.to(device,      dtype=torch.float32, non_blocking=True)
-    tk_mask          = tk_mask.to(device,          dtype=torch.bool,  non_blocking=True)
+    tk_mask          = tk_mask.to(device,          dtype=torch.bool,    non_blocking=True)
     sv_features      = sv_features.to(device,      dtype=torch.float32, non_blocking=True)
     y                = y.to(device,                dtype=torch.float32, non_blocking=True)       
 
@@ -541,12 +542,12 @@ for epoch in range(num_epochs):
             else:
                 savename = 'ParT_modified' + datetime.datetime.now().strftime('_%Y-%m-%d-%H-%M-%S_') + suffix
             # torch.save(model.state_dict(), '/users/alikaan.gueven/ParticleTransformer/PyTorchExercises/models/vtx_' + savename)
-            torch.save(model, MODEL_SAVE_BASEPATH + 'vtx_' + savename)
+            torch.save(model, os.path.join(MODEL_SAVE_BASEPATH, 'vtx_' + savename) )
         
         if use_neptune:
-            torch.save(model, MODEL_SAVE_BASEPATH + 'vtx_' + run["sys/id"].fetch() + '_epoch_' + str(epoch) + '.pt')
+            torch.save(model, os.path.join(MODEL_SAVE_BASEPATH, 'vtx_' + run["sys/id"].fetch() + '_epoch_' + str(epoch) + '.pt') )
         else:
-            torch.save(model, MODEL_SAVE_BASEPATH + 'vtx_' + datetime.datetime.now().strftime('_%Y-%m-%d-%H-%M-%S_') + '_epoch_' + str(epoch) + '.pt')
+            torch.save(model, os.path.join(MODEL_SAVE_BASEPATH, 'vtx_' + datetime.datetime.now().strftime('_%Y-%m-%d-%H-%M-%S_') + '_epoch_' + str(epoch) + '.pt') )
 
 
         if use_neptune:

@@ -27,7 +27,8 @@ def _save_fig_to_tmp(neptune_run, name: str) -> str:
     _ensure_tmp_dir()
     save_path = os.path.join(TMP_DIR, f"{name}.png")
     plt.savefig(save_path, dpi=150, bbox_inches="tight")
-    neptune_run[name].append(neptune.types.File(save_path))
+    fig = plt.gcf()
+    neptune_run[name].append(neptune.types.File.as_image(fig))
     plt.close()
     return save_path
 
