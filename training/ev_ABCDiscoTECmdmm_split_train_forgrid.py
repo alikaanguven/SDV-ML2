@@ -142,7 +142,7 @@ shuffle = False
 nWorkers = 4
 
 
-base_step_size = 3000 # 4000
+base_step_size = 7000
 step_size = base_step_size # * len(gpus)
 
 
@@ -484,6 +484,8 @@ for epoch in range(num_epochs):
 
 
     for batch_num, X in enumerate(trainLoader):
+        # Skip empty batches. (Can happen with event mask)
+        if not X: continue
         train_step(X, batch_num, losses)
 
 
@@ -516,6 +518,8 @@ for epoch in range(num_epochs):
     with torch.no_grad():
         print("torch.no_grad()")
         for batch_num, X in enumerate(valLoader):
+            # Skip empty batches. (Can happen with event mask)
+            if not X: continue
             validation_step(X, batch_num, losses, p1_bucket, p2_bucket, label_bucket)
 
 

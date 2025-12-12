@@ -211,3 +211,161 @@ def probe_shapes(my_dataset_iterator, data_dict, branch_dict, preprocess_fn, ste
     dl = torch.utils.data.DataLoader(ds, num_workers=0, collate_fn=preprocess_fn, drop_last=True)
     batch = next(iter(dl))
     return {k: tuple(v.shape) for k, v in batch.items()}
+
+
+
+def add_ngoodtrack_with_deepTable(X):
+    """
+    Reimplement:
+      SDVTrack_isGoodTrack = ...
+      SDVSecVtx_ngoodtk    = SDVSecVtx_nGoodTrack(...)
+
+    using Awkward + deepTable.
+
+    Adds to X:
+      - SDVTrack_isGoodTrack      (per-track bool)
+      - SDVSecVtx_ngoodTrack      (per-SV int)
+    """
+
+    SDVTrack_ptSig      = X['SDVTrack_pt'] / X['SDVTrack_ptError']
+    SDVTrack_dxySig     = np.abs(X['SDVTrack_dxy'])/ X['SDVTrack_dxyError']
+    SDVTrack_dxydzratio = np.abs(X['SDVTrack_dxy'] / X['SDVTrack_dz'])
+
+
+    SDVTrack_isGoodTrack = (
+        (X["SDVTrack_normalizedChi2"]    < 5)   &
+        (X["SDVTrack_numberOfValidHits"] > 13)  &
+        ((1.0 / SDVTrack_ptSig)     < 0.015)    &
+        (SDVTrack_dxySig            > 4)        &
+        (SDVTrack_dxydzratio        > 0.25)     &
+        (X["SDVTrack_pfRelIso03_all"]  < 5)
+    )
+
+    trIdx = X["SDVIdxLUT_TrackIdx"]   # (event, nAssoc)
+    svIdx = X["SDVIdxLUT_SecVtxIdx"]  # (event, nAssoc)
+    n_sv  = X["nSDVSecVtx"]           # (event,)
+
+    builder = ak.ArrayBuilder()
+    deepTable(SDVTrack_isGoodTrack, trIdx, svIdx, n_sv, builder)
+    isGood_deep = builder.snapshot()  # shape: (nEvent, nSV, nTracksPerSV), dtype=bool
+
+    
+    X["SDVSecVtx_ngoodTrack"] = ak.sum(isGood_deep, axis=-1)  # (nEvent, nSV)
+    return X
+
+
+
+def build_event_filter(X):
+    """
+    Build the event-level filter mask, like:
+      - ngoodTrack >= 1
+      - preselection (MET, flags, jets, HEM veto, leptons, etc.)
+
+    Parameters
+    ----------
+    X : ak.Array
+
+    Returns
+    -------
+    event_mask : ak.Array (bool, shape (nEvents,))
+        Boolean mask to select events passing the full preselection.
+    """
+
+
+    # Vertex filter
+    # ------------------------------------------------------------------
+    X = add_ngoodtrack_with_deepTable(X)
+    # per_sv_mask = X["SDVSecVtx_ngoodTrack"] >= 1
+    per_sv_mask = X["SDVSecVtx_ngoodTrack"] >= 1
+    event_mask_svs = ak.any(per_sv_mask, axis=1)   # (nEvents,)
+
+
+    # Preselection filter
+    # ------------------------------------------------------------------
+    jet_selHEM = (X["Jet_jetId"] == 6)
+
+    nJetHEM = ak.sum(
+        jet_selHEM
+        & (X["Jet_eta"] > -3.0)
+        & (X["Jet_eta"] < -1.3)
+        & (X["Jet_phi"] > -1.57)
+        & (X["Jet_phi"] < -0.87),
+        axis=1,
+    )
+
+    jet_sel = (
+        (X["Jet_jetId"] == 6)           &
+        (np.abs(X["Jet_eta"]) < 2.4)    &
+        (X["Jet_neHEF"] < 0.8)          &
+        (X["Jet_chHEF"] > 0.1)          &
+        (X["Jet_pt"] > 20)
+    )
+
+    Jet_pt_sel  = X["Jet_pt"][jet_sel]
+    Jet_phi_sel = X["Jet_phi"][jet_sel]
+    nJet_sel = ak.sum(jet_sel, axis=1)
+
+
+    leadingjet_pt  = ak.fill_none(ak.firsts(Jet_pt_sel),  0.0)
+    leadingjet_phi = ak.fill_none(ak.firsts(Jet_phi_sel), 0.0)
+
+    dphi_MET_jet0 = np.arccos(np.cos(leadingjet_phi - X["MET_phi"]))
+
+    nMuon_sel = ak.sum(
+        (X["Muon_looseId"] > 0) &
+        (X["Muon_eta"] < 2.4)   &
+        (X["Muon_pt"] > 10),
+        axis=1,
+    )
+
+
+    nEle_sel = ak.sum(
+        (X["Electron_cutBased"] >= 1)   &
+        (X["Electron_eta"] < 2.5)       &
+        (X["Electron_pt"] > 10),
+        axis=1,
+    )
+
+    nTau_sel = ak.sum(
+        (X["Tau_idDecayModeOldDMs"] >= 1)   &
+        (X["Tau_eta"] < 2.3)                &
+        (X["Tau_pt"] > 18),
+        axis=1,
+    )
+
+    nPhoton_sel = ak.sum(
+        (X["Photon_cutBased"] >= 1)     &
+        (X["Photon_eta"] < 2.5)         &
+        (X["Photon_pt"] > 15),
+        axis=1,
+    )
+
+
+    presel = (
+        # (X["MET_pt"] > 200)
+        X["Flag_goodVertices"]
+        & X["Flag_globalSuperTightHalo2016Filter"]
+        & X["Flag_HBHENoiseFilter"]
+        & X["Flag_HBHENoiseIsoFilter"]
+        & X["Flag_EcalDeadCellTriggerPrimitiveFilter"]
+        & X["Flag_BadPFMuonFilter"]
+        & X["Flag_BadPFMuonDzFilter"]
+        & X["Flag_hfNoisyHitsFilter"]
+        & X["Flag_BadChargedCandidateFilter"]
+        & X["Flag_eeBadScFilter"]
+        & X["Flag_ecalBadCalibFilter"]
+        & X["HLT_PFMETNoMu120_PFMHTNoMu120_IDTight"]
+        & (nMuon_sel == 0)
+        & (nEle_sel == 0)
+        & (nTau_sel == 0)
+        & (nPhoton_sel == 0)
+        & (nJet_sel > 0)
+        # & (leadingjet_pt > 100)
+        & (nJetHEM == 0)
+        & (dphi_MET_jet0 > 1.0)
+    )
+
+    # combine vertex sel + presel
+    event_mask = event_mask_svs & presel
+    return event_mask
+

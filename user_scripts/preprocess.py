@@ -19,15 +19,18 @@ def transform(batch, branch_dict, isData=False):
     """
     out_dict = {}
     X = ak.concatenate(batch, axis=0)
-
-    # per-vertex mask: same shape as SDVSecVtx_ngoodTrack
-    per_sv_mask = X['SDVSecVtx_ngoodTrack'] >= 1
-
-    # per-event mask: at least one vertex passes
-    event_mask = ak.any(per_sv_mask, axis=1)   # shape: (nEvents,)
-    # event_mask = event_mask & X['nSDVSecVtx'] == 1
-    # apply event-level filter
+    event_mask = hp.build_event_filter(X)
+    # print("len(X) before presel:", len(ak.concatenate(batch, axis=0)))
     X = X[event_mask]
+    # print("len(X) after presel:", len(X))
+
+    # Guard against 
+    # IndexError: cannot slice RegularArray (of length 1) with array(0): index out of range
+    # This error occurred while attempting to slice
+    # <Array [] type='0 * unknown'>
+    # with (Ellipsis, 0)
+    # Preprocess will fail if there are no events :(
+    if len(X) == 0: return None
 
     # X = batch[0]
 
@@ -85,6 +88,7 @@ def transform(batch, branch_dict, isData=False):
 
     out_dict["tk_features"] = torch.cat((
                                          torch.log(X['SDVTrack_pt']),
+                                         torch.log(X['SDVTrack_pt'] / X['SDVTrack_ptError']),
                                          X['SDVTrack_eta'],
                                          X['SDVTrack_vtxdR'],
                                          X['SDVTrack_dxy'] / (X['SDVTrack_dz'] + eps),
