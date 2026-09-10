@@ -1,0 +1,69 @@
+{
+    "CustomNanoAOD": {
+        "dir": {
+            "wjetstolnuht0100_2017":        "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/wjetstolnuht0100_2017",
+            "wjetstolnuht0200_2017":        "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/wjetstolnuht0200_2017",
+            "wjetstolnuht0400_2017":        "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/wjetstolnuht0400_2017",
+            "wjetstolnuht0600_2017":        "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/wjetstolnuht0600_2017",
+            "wjetstolnuht0800_2017":        "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/wjetstolnuht0800_2017",
+            "wjetstolnuht1200_2017":        "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/wjetstolnuht1200_2017",
+            "wjetstolnuht2500_2017":        "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/wjetstolnuht2500_2017",
+            "zjetstonunuht0100_2017":       "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/zjetstonunuht0100_2017",
+            "zjetstonunuht0200_2017":       "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/zjetstonunuht0200_2017",
+            "zjetstonunuht0400_2017":       "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/zjetstonunuht0400_2017",
+            "zjetstonunuht0600_2017":       "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/zjetstonunuht0600_2017",
+            "zjetstonunuht0800_2017":       "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/zjetstonunuht0800_2017",
+            "zjetstonunuht1200_2017":       "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/zjetstonunuht1200_2017",
+            "zjetstonunuht2500_2017":       "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/zjetstonunuht2500_2017",
+            "qcdht0050_2017":               "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/qcdht0050_2017",
+            "qcdht0100_2017":               "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/qcdht0100_2017",
+            "qcdht0200_2017":               "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/qcdht0200_2017",
+            "qcdht0300_2017":               "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/qcdht0300_2017",
+            "qcdht0500_2017":               "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/qcdht0500_2017",
+            "qcdht0700_2017":               "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/qcdht0700_2017",
+            "qcdht1000_2017":               "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/qcdht1000_2017",
+            "qcdht1500_2017":               "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/qcdht1500_2017",
+            "qcdht2000_2017":               "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/qcdht2000_2017",
+            "ttbar_2017":                   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/ttbar_2017",
+            "st_tch_tbar_2017":             "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/st_tch_tbar_2017",
+            "st_tch_t_2017":                "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/st_tch_t_2017",
+            "st_tW_tbar_2017":              "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/st_tW_tbar_2017",
+            "st_tW_t_2017":                 "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_17/st_tW_t_2017"
+        },
+
+        "totalsumWeights": {
+            "wjetstolnuht0100_2017":  46858356,
+            "wjetstolnuht0200_2017":  42602407,
+            "wjetstolnuht0400_2017":  5645169,
+            "wjetstolnuht0600_2017":  5552478,
+            "wjetstolnuht0800_2017":  5222822,
+            "wjetstolnuht1200_2017":  4955636,
+            "wjetstolnuht2500_2017":  1185699,
+            
+            "zjetstonunuht0100_2017": 19136812,
+            "zjetstonunuht0200_2017": 17468549,
+            "zjetstonunuht0400_2017": 13963690,
+            "zjetstonunuht0600_2017": 4418971,
+            "zjetstonunuht0800_2017": 1513585,
+            "zjetstonunuht1200_2017": 267125,
+            "zjetstonunuht2500_2017": 176201,
+
+            "qcdht0050_2017" : 39988275,
+            "qcdht0100_2017" : 80155038,
+            "qcdht0200_2017" : 60573186,
+            "qcdht0300_2017" : 55150116,
+            "qcdht0500_2017" : 62033260,
+            "qcdht0700_2017" : 48737689,
+            "qcdht1000_2017" : 12336247,
+            "qcdht1500_2017" : 12941701,
+            "qcdht2000_2017" : 5898290,
+
+            "ttbar_2017"         : 96263174153.7, 
+            "st_tch_tbar_2017"   : 2283096199.9, 
+            "st_tch_t_2017"      : 6417535270.6, 
+            "st_tW_tbar_2017"    : 184446313.2, 
+            "st_tW_t_2017"       : 183933832.0
+        }
+    }
+}
+

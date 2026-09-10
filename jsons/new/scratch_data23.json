@@ -1,0 +1,20 @@
+{
+    "CustomNanoAOD": {
+        "dir": {
+            "jetmet0_2023c1":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_23/jetmet0_2023c1",
+            "jetmet0_2023c2":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_23/jetmet0_2023c2",
+            "jetmet0_2023c3":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_23/jetmet0_2023c3",
+            "jetmet0_2023c4":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_23/jetmet0_2023c4",
+            "jetmet0_2023d1":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_23/jetmet0_2023d1",
+            "jetmet0_2023d2":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_23/jetmet0_2023d2",
+
+            "jetmet1_2023c1":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_23/jetmet1_2023c1",
+            "jetmet1_2023c2":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_23/jetmet1_2023c2",
+            "jetmet1_2023c3":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_23/jetmet1_2023c3",
+            "jetmet1_2023c4":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_23/jetmet1_2023c4",
+            "jetmet1_2023d1":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_23/jetmet1_2023d1",
+            "jetmet1_2023d2":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_23/jetmet1_2023d2"
+        }
+    }
+    
+}

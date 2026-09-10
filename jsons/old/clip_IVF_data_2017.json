@@ -1,0 +1,11 @@
+{
+    "CustomNanoAOD": {
+        "dir": {
+            "met2017b" : "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/IVF_2017_data_merged/met2017b",
+            "met2017c" : "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/IVF_2017_data_merged/met2017c",
+            "met2017d" : "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/IVF_2017_data_merged/met2017d",
+            "met2017e" : "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/IVF_2017_data_merged/met2017e",
+            "met2017f" : "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/IVF_2017_data_merged/met2017f"
+        }
+    }
+}

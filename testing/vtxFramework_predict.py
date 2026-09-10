@@ -7,6 +7,9 @@ import torch
 import torch.nn.functional as F
 torch.set_printoptions(precision=15)
 
+# Do the following if you still have OSError: [Errno 24] Too many open files
+# torch.multiprocessing.set_sharing_strategy("file_system")
+
 import awkward as ak
 import numpy as np
 import warnings
@@ -58,14 +61,14 @@ files = glob.glob(f'{INPUTDIR}/**/*.root', recursive=True)
 testList = files
 
 
-branchDict = get_branchDict()
-
-preprocess_fn = partial(preprocess.transform, branch_dict=branchDict)
+# We don't calculate loss. We don't need the label.
+branchDict = get_branchDict(isData=True)
+preprocess_fn = partial(preprocess.transform, branch_dict=branchDict, isData=True)
 
 
 shuffle = False
 nWorkers = 1
-step_size = 20000
+step_size = 4000
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
@@ -111,7 +114,8 @@ with torch.no_grad():
         testLoader = torch.utils.data.DataLoader(testDataset,
                                                  num_workers=nWorkers,
                                                  prefetch_factor=prefetch_factor,
-                                                 persistent_workers= True,
+                                                 persistent_workers=False, # This was True in training.
+                                                                           # Use `False` to avoid OSError: [Errno 24] Too many open files
                                                  collate_fn=preprocess_fn,
                                                  pin_memory=True)
         
@@ -125,14 +129,14 @@ with torch.no_grad():
             tk_mask          = X["tk_mask"]
             sv_features      = X["sv_features"]
             
-            y = F.one_hot( (X['label'][:,0] > 1).long(), num_classes=2 )
+            # y = F.one_hot( (X['label'][:,0] > 1).long(), num_classes=2 )
             
 
             tk_pair_features = tk_pair_features.to(device, dtype=float, non_blocking=True)
             tk_features      = tk_features.to(device,      dtype=float, non_blocking=True)
             tk_mask          = tk_mask.to(device,          dtype=float, non_blocking=True)
             sv_features      = sv_features.to(device,      dtype=float, non_blocking=True)
-            y                = y.to(device,                dtype=float, non_blocking=True)       
+            # y                = y.to(device,                dtype=float, non_blocking=True)       
 
 
             

@@ -19,10 +19,10 @@ import user_scripts.preprocess as preprocess
 from   user_scripts.branches_to_get import get_branchDict
 import utils.network_helpers as nh
 
-from utils.vtxLevelDataset import ModifiedUprootIterator
+from utils.vtxLevelDataset_v2 import ModifiedUprootIterator
 from utils.help_preprocess import probe_shapes
 from utils.optimizers.ranger import Ranger
-
+import uuid
 import matplotlib.pyplot as plt
 
 
@@ -47,25 +47,52 @@ import json
 
 
 warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+
+def _ensure_tmp_dir() -> str:
+    os.makedirs(TMP_DIR, exist_ok=True)
+    return TMP_DIR
+
+
+def _save_fig_to_tmp(neptune_run, name: str) -> str:
+    """
+    Save the current matplotlib figure to /tmp/$USER and log to Neptune.
+    Returns the absolute file path.
+
+    """
+    _ensure_tmp_dir()
+    save_path = os.path.join(TMP_DIR, f"{name}.png")
+    plt.savefig(save_path, dpi=150, bbox_inches="tight")
+    fig = plt.gcf()
+    neptune_run[name].append(neptune.types.File.as_image(fig))
+    plt.close()
+    return save_path
 
 
 
+hostname = os.uname()[1]
+if 'hepgpu' in hostname:
+    RUN_SAVE_BASEPATH   = '/scratch/agueven/ParT/runs'                                   
+    MODEL_SAVE_BASEPATH = '/scratch/agueven/ParT/models'
+    JSON_FILE           = 'jsons/hepgpu_IVF_shuffled_trainK.json'
 
-# # MLDATADIR = '/scratch-cbe/users/alikaan.gueven/ML_KAAN/run2/'
-# MLDATADIR = '/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_signal_mixed'
-# 
-# # tmpSigList = glob.glob(f'{MLDATADIR}/stop*/**/*.root', recursive=True)
-# tmpSigList = glob.glob(f'{MLDATADIR}/*.root', recursive=True)
+elif 'clip' in hostname:
+    RUN_SAVE_BASEPATH   = '/groups/hephy/cms/alikaan.gueven/ParT/runs'
+    MODEL_SAVE_BASEPATH = '/groups/hephy/cms/alikaan.gueven/ParT/models'
+    JSON_FILE           = 'jsons/clip_IVF_trainK.json'
+
+else:
+    raise ValueError('Which machine is this? Seems like this is not clip or hepgpu.')
 
 
+TMP_DIR = os.path.expandvars(f"/tmp/$USER/neptune/{str(uuid.uuid4())}")
 
-
-json_file = "/groups/hephy/cms/ang.li/MLjson/CustomNanoAOD_MLtraining_20250910.json"
-with open(json_file, "r") as f:
+with open(JSON_FILE, "r") as f:
     data = json.load(f)
 
 glob_dirs = []
-for key, value in data["CustomNanoAOD_MLtraining_20250910"]["dir"].items():
+for key, value in data["CustomNanoAOD"]["dir"].items():
     glob_dirs.append(value)
 
 tmpSigList = []
@@ -79,7 +106,7 @@ random.shuffle(tmpSigList)   # shuffle in reproducible way
 tmpSigList = [sig + ':Events' for sig in tmpSigList]
 
 maxTrain = round(len(tmpSigList)*0.70)
-# maxTrain = round(len(tmpSigList)*0.10)
+
 
 minVal =   round(len(tmpSigList)*0.70)
 maxVal   = round(len(tmpSigList)*1.00)
@@ -89,26 +116,6 @@ maxVal   = round(len(tmpSigList)*1.00)
 trainSigList = tmpSigList[:maxTrain]
 valSigList   = tmpSigList[minVal:maxVal]
 
-# trainBkgList = glob.glob(f'{MLDATADIR}/training_set/bkg_mix*.root')
-# valBkgList = glob.glob(f'{MLDATADIR}/val_set/bkg_mix*.root')
-# 
-# trainBkgList = glob.glob('/scratch-cbe/users/alikaan.gueven/ML_KAAN/train/training_set/bkg_mix*.root')
-# valBkgList = glob.glob('/scratch-cbe/users/alikaan.gueven/ML_KAAN/train/val_set/bkg_mix*.root')
-# 
-# 
-# trainBkgList = [elm + ':Events' for elm in trainBkgList]
-# valBkgList = [elm + ':Events' for elm in valBkgList]
-
-
-# trainDict = {
-#     'sig': trainSigList,
-#     'bkg': trainBkgList
-# }
-# 
-# valDict = {
-#     'sig': valSigList,
-#     'bkg': valBkgList
-# }
 
 trainDict = {
     'sig': trainSigList,
@@ -124,7 +131,7 @@ branchDict = get_branchDict()
 
 shuffle = False
 nWorkers = 6
-base_step_size = 1000
+base_step_size = 500
 if torch.cuda.device_count():
     step_size = base_step_size * torch.cuda.device_count()
 else:
@@ -185,8 +192,8 @@ param = {
     "pair_embed_dims": [64, 64, 64],
     "num_classes": 2,
     "for_inference": False,
-    "init_lr": 8e-4,
-    "class_weights": [1, 1],                # [bkg, sig]
+    "init_lr": 5e-4,
+    "class_weights": [0.39, 1],                # [bkg, sig]
     "init_step_size": step_size,
     "block_params": {'dropout': 0.20, 'attn_dropout': 0.15, 'activation_dropout': 0.15},
     "num_layers": 4,
@@ -195,7 +202,7 @@ param = {
 
 # Log
 ########################################################################
-use_neptune=True
+use_neptune=False
 
 from shutil import copytree, ignore_patterns
 
@@ -217,9 +224,9 @@ if use_neptune:
 else:
     run_savename = "vtx" + datetime.datetime.now().strftime('_%Y-%m-%d-%H-%M-%S')
 
-destination = os.path.join('/groups/hephy/cms/alikaan.gueven/ParT/runs', run_savename)
+cp_dest = os.path.join(RUN_SAVE_BASEPATH, run_savename)
 copytree(PROJECT_DIR,
-        destination,
+        cp_dest,
         ignore=ignore_patterns('*.pyc', 'tmp*', '*.root', '*.pt', '*.png', '*.pdf', '*.ipynb_checkpoints', '__pycache__', '*.ipynb', 'tb*', '.neptune*', 'neptune_key*'))
 
 if use_neptune:
@@ -254,6 +261,7 @@ print(f"Total params        : {stats['total']:,}")
 print(f"  Trainable         : {stats['trainable']:,}")
 print(f"    • weights       : {stats['trainable_weights']:,}")
 print(f"    • biases        : {stats['trainable_biases']:,}")
+print(f"    • other         : {stats['trainable_other']:,}")
 print(f"  Non-trainable     : {stats['non_trainable']:,}\n")
 
 def train_step(X, batch_num, CM_epoch, losses):
@@ -284,6 +292,14 @@ def train_step(X, batch_num, CM_epoch, losses):
                    v=tk_pair_features,
                    x_sv=sv_features,
                    mask=tk_mask)
+    
+    # logits check
+    if not torch.isfinite(output).all():
+        bad = ~torch.isfinite(output)
+        print(f"[VAL] non-finite LOGITS at batch {batch_num}: {bad.sum().item()} elems")
+        print("logits min/max:", output[torch.isfinite(output)].min().item(),
+                            output[torch.isfinite(output)].max().item())
+        return  # or raise
 
     # Setting the weights with predetermined class inbalance
     sample_weights = torch.sum((y==1) * class_weights_tensor,axis=-1)
@@ -296,6 +312,12 @@ def train_step(X, batch_num, CM_epoch, losses):
     losses.append(loss.item())
 
     output = torch.softmax(output, dim=1)
+
+    output = torch.softmax(output, dim=1)
+    if not torch.isfinite(output).all():
+        bad = ~torch.isfinite(output)
+        print(f"[VAL] non-finite PROBS at batch {batch_num}: {bad.sum().item()} elems")
+        return
 
     sigThreshold = 0.50
     y_pred01 = (output[:,-1] > sigThreshold).to('cpu', dtype=int)
@@ -313,10 +335,11 @@ def train_step(X, batch_num, CM_epoch, losses):
     PPV = TP / (TP+FP) if (TP+FP) != 0 else 0
 
     if use_neptune:
-        run["train/TPR"].append(TPR if math.isfinite(TPR) else 0)
-        run["train/PPV"].append(PPV if math.isfinite(PPV) else 0)
+        pass
+        # run["train/TPR"].append(TPR if math.isfinite(TPR) else 0)
+        # run["train/PPV"].append(PPV if math.isfinite(PPV) else 0)
 
-    elif batch_num %10 == 0:
+    elif batch_num %1000 == 0:
         print('batch_num: ', batch_num)
         print('Class imbalance: ', [round((torch.sum(y.data[:,-1] == 0) / torch.sum(y.data[:,-1] == 1)).item(),2), 1]) # bkg/sig
         print('#'*80)
@@ -330,19 +353,18 @@ def train_step(X, batch_num, CM_epoch, losses):
 
     acc = (TP+TN) / (TP + FN + FP + TN)
     if use_neptune:
-        run["train/accuracy_batch"].append(acc if math.isfinite(acc) else 0)
-        run["train/loss_batch"].append(loss.item() if math.isfinite(loss.item()) else 10)
+        pass
+        # run["train/accuracy_batch"].append(acc if math.isfinite(acc) else 0)
+        # run["train/loss_batch"].append(loss.item() if math.isfinite(loss.item()) else 10)
         
     else:
-        if batch_num %10 == 0:
+        if batch_num %1000 == 0:
             print('Acc:  ', acc.item())
             print('Loss: ', loss.item())
 
 def validation_step(X, batch_num, CM_epoch, losses, output_bucket, label_bucket):
     if batch_num == 0:
         print('Started batch processes. [validation]')
-
-
     tk_pair_features = X["tk_pair_features"]
     tk_features      = X["tk_features"]
     tk_mask          = X["tk_mask"]
@@ -364,6 +386,16 @@ def validation_step(X, batch_num, CM_epoch, losses, output_bucket, label_bucket)
                    v=tk_pair_features,
                    x_sv=sv_features,
                    mask=tk_mask)
+    
+    # check logits first (best diagnostic)
+    if not torch.isfinite(output).all():
+        bad = ~torch.isfinite(output)
+        print(f"[VAL] non-finite LOGITS at batch {batch_num}: {bad.sum().item()} elements")
+        # optionally print a small sample
+        idx = bad.nonzero(as_tuple=False)[:10]
+        print("first bad indices:", idx.tolist())
+        # skip this batch to keep running (optional)
+        return
 
     # Setting the weights with predetermined class inbalance
     sample_weights = torch.sum((y==1) * class_weights_tensor,axis=-1)
@@ -393,10 +425,11 @@ def validation_step(X, batch_num, CM_epoch, losses, output_bucket, label_bucket)
     PPV = TP / (TP+FP) if (TP+FP) != 0 else 0
 
     if use_neptune:
-        run["val/TPR"].append(TPR if math.isfinite(TPR) else 0)
-        run["val/PPV"].append(PPV if math.isfinite(PPV) else 0)
+        pass
+        # run["val/TPR"].append(TPR if math.isfinite(TPR) else 0)
+        # run["val/PPV"].append(PPV if math.isfinite(PPV) else 0)
 
-    elif batch_num %10 == 0:
+    elif batch_num %1000 == 0:
         print('batch_num: ', batch_num)
         print('Class imbalance: ', [round((torch.sum(y.data[:,-1] == 0) / torch.sum(y.data[:,-1] == 1)).item(),2), 1]) # bkg/sig
         print('#'*80)
@@ -410,16 +443,21 @@ def validation_step(X, batch_num, CM_epoch, losses, output_bucket, label_bucket)
 
     acc = (TP+TN) / (TP + FN + FP + TN)
     if use_neptune:
-        run["val/accuracy_batch"].append(acc if math.isfinite(acc) else 0)
-        run["val/loss_batch"].append(loss.item() if math.isfinite(loss.item()) else 10)
+        pass
+        # run["val/accuracy_batch"].append(acc if math.isfinite(acc) else 0)
+        # run["val/loss_batch"].append(loss.item() if math.isfinite(loss.item()) else 10)
         
     else:
-        if batch_num %10 == 0:
+        if batch_num %1000 == 0:
             print('Acc:  ', acc.item())
             print('Loss: ', loss.item())
 
 
-num_epochs = 200
+num_epochs = 100
+max_train_vtx = float('inf') # 2_000_000
+
+param['num_epochs'] = num_epochs
+param['max_train_vtx'] = max_train_vtx
 
 
 class_weights_tensor = torch.tensor(param['class_weights']).to(device, dtype=float)
@@ -443,8 +481,13 @@ for epoch in range(num_epochs):
         print(f"lr: {scheduler.get_last_lr()}")
         print(type(scheduler.get_last_lr()[0]))
 
-
+    n_trained = 0
     for batch_num, X in enumerate(trainLoader):
+        if n_trained >= max_train_vtx:
+            print('n_trained = ', n_trained, '. Stopping...')
+            break
+        n_to_train = X['sv_features'].shape[0]
+        n_trained += n_to_train
         train_step(X, batch_num, CM_epoch, losses)
 
 
@@ -477,6 +520,8 @@ for epoch in range(num_epochs):
     with torch.no_grad():
         print("torch.no_grad()")
         for batch_num, X in enumerate(valLoader):
+            # If no events, we continue
+            if not X: continue
             validation_step(X, batch_num, CM_epoch, losses, output_bucket, label_bucket)
 
         # --- AUC ---------------------------------------------------------------
@@ -485,7 +530,10 @@ for epoch in range(num_epochs):
 
         # probability assigned to the positive class
         y_scores = torch.cat(output_bucket)[:, 1].cpu().numpy()
-
+        
+        print('y_scores: ',                   y_scores)
+        print('np.isnan(y_scores): ',         np.isnan(y_scores))
+        print('np.any(np.isnan(y_scores)): ', np.any(np.isnan(y_scores)))
         auc_epoch = roc_auc_score(y_true, y_scores)
         # ----------------------------------------------------------------------
 
@@ -569,26 +617,6 @@ for epoch in range(num_epochs):
             print(f"TPR@FP≤{K}: {tpr_k:.4f}  |  τ={tau_k:.6g}  |  FP={fp_count}  |  FPR={fpr_k:.6g}")
 # --------------------------------------------------------------------------
 
-
-
-        ## best val epoch save
-        if acc_epoch > best_val_acc:
-            suffix = 'best_valacc_epoch.pt'
-            best_val_acc = acc_epoch
-            savename = None
-            if use_neptune:
-                savename = run["sys/id"].fetch() + suffix
-            else:
-                savename = 'ParT_modified' + datetime.datetime.now().strftime('_%Y-%m-%d-%H-%M-%S_') + suffix
-            # torch.save(model.state_dict(), '/users/alikaan.gueven/ParticleTransformer/PyTorchExercises/models/vtx_' + savename)
-            torch.save(model, '/groups/hephy/cms/alikaan.gueven/ParT/models/vtx_' + savename)
-        
-        if use_neptune:
-            torch.save(model, '/groups/hephy/cms/alikaan.gueven/ParT/models/vtx_' + run["sys/id"].fetch() + '_epoch_' + str(epoch) + '.pt')
-        else:
-            torch.save(model, '/groups/hephy/cms/alikaan.gueven/ParT/models/vtx_' + datetime.datetime.now().strftime('_%Y-%m-%d-%H-%M-%S_') + '_epoch_' + str(epoch) + '.pt')
-
-
         ## min loss epoch save
         if loss_epoch < best_val_loss:
             suffix = 'best_valloss_epoch.pt'
@@ -599,12 +627,12 @@ for epoch in range(num_epochs):
             else:
                 savename = 'ParT_modified' + datetime.datetime.now().strftime('_%Y-%m-%d-%H-%M-%S_') + suffix
             # torch.save(model.state_dict(), '/users/alikaan.gueven/ParticleTransformer/PyTorchExercises/models/vtx_' + savename)
-            torch.save(model, '/groups/hephy/cms/alikaan.gueven/ParT/models/vtx_' + savename)
+            torch.save(model, os.path.join(MODEL_SAVE_BASEPATH, 'vtx_' + savename) )
         
         if use_neptune:
-            torch.save(model, '/groups/hephy/cms/alikaan.gueven/ParT/models/vtx_' + run["sys/id"].fetch() + '_epoch_' + str(epoch) + '.pt')
+            torch.save(model, os.path.join(MODEL_SAVE_BASEPATH, 'vtx_' + run["sys/id"].fetch() + '_epoch_' + str(epoch) + '.pt') )
         else:
-            torch.save(model, '/groups/hephy/cms/alikaan.gueven/ParT/models/vtx_' + datetime.datetime.now().strftime('_%Y-%m-%d-%H-%M-%S_') + '_epoch_' + str(epoch) + '.pt')
+            torch.save(model, os.path.join(MODEL_SAVE_BASEPATH, 'vtx_' + datetime.datetime.now().strftime('_%Y-%m-%d-%H-%M-%S_') + '_epoch_' + str(epoch) + '.pt') )
 
 
         if use_neptune:
@@ -624,10 +652,7 @@ for epoch in range(num_epochs):
             plt.xlabel('ParT Score')
             plt.ylabel('vtx Count')
             plt.legend()
-            fig_savepath = os.path.join(PROJECT_DIR, 'training/tmp/hist.png')
-            plt.savefig(fig_savepath)
-
-            run['score_hist'].append(neptune.types.File(fig_savepath))
+            fig_savepath = _save_fig_to_tmp(run, 'scores_hist')
 
     scheduler.step()
     gc.collect() # counter memory leaks at the end of each epoch
@@ -638,7 +663,6 @@ for epoch in range(num_epochs):
     
 if use_neptune:
     run.stop()
-
 
 
 

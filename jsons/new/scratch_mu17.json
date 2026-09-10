@@ -1,0 +1,11 @@
+{
+    "CustomNanoAOD": {
+        "dir": {
+            "isomu2017b" : "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/muon17/isomu2017b",
+            "isomu2017c" : "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/muon17/isomu2017c",
+            "isomu2017d" : "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/muon17/isomu2017d",
+            "isomu2017e" : "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/muon17/isomu2017e",
+            "isomu2017f" : "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/muon17/isomu2017f"
+        }
+    }
+}

@@ -569,10 +569,13 @@ class ParticleTransformerDVTagger(nn.Module):
                 if uu_idx is not None:
                     uu = build_sparse_tensor(uu, uu_idx, x.size(-1))
             x, v, mask, uu = self.trimmer(x, v, mask, uu)
+            
+            # Now  1 = NaN track, 0 = normal
             padding_mask = ~mask.squeeze(1)  # (N, P)
 
             # Convert to float mask with -inf where padded
             # Pay attention in the future!!!
+            # Fills elements of self tensor with value where mask is True.
             padding_mask = padding_mask.to(dtype=x.dtype).masked_fill(padding_mask, float("-inf"))
 
 

@@ -1,0 +1,12 @@
+{
+    "CustomNanoAOD": {
+        "dir": {
+            "jetmet_2022c":     "/eos/vbc/experiments/cms/store/user/lian/JetMET/Run2022C_JetMET_nano_v2",
+            "jetmet_2022d":     "/eos/vbc/experiments/cms/store/user/lian/JetMET/Run2022D_JetMET_nano_v2",
+            "jetmet_2022e":     "/eos/vbc/experiments/cms/store/user/lian/JetMET/Run2022E_JetMET_nano_v3",
+            "jetmet_2022f":     "/eos/vbc/experiments/cms/store/user/lian/JetMET/Run2022F_JetMET_nano_v2",
+            "jetmet_2022g":     "/eos/vbc/experiments/cms/store/user/lian/JetMET/Run2022G_JetMET_nano_v2"
+        }
+    }
+    
+}

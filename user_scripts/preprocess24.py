@@ -1,0 +1,152 @@
+import sys
+sys.path.append("/users/alikaan.gueven/SDV-ML/ParticleTransformer/SDV-ML")
+
+import torch
+import awkward as ak
+import numpy as np
+import utils.help_preprocess as hp
+
+
+import correctionlib
+from functools import lru_cache
+@lru_cache
+def get_jetid_evaluator(path, name):
+    cset = correctionlib.CorrectionSet.from_file(path)
+    return cset[name]
+
+def get_jetid_2024(X, jetid_path, jetid_name):
+    evaluator = get_jetid_evaluator(jetid_path, jetid_name)
+
+    counts = ak.num(X["Jet_eta"], axis=1)
+    n_jets = int(ak.sum(counts))
+
+    if n_jets == 0:
+        return ak.unflatten(np.array([], dtype=bool), counts)
+
+    eta = ak.to_numpy(ak.flatten(X["Jet_eta"], axis=1))
+    chHEF = ak.to_numpy(ak.flatten(X["Jet_chHEF"], axis=1))
+    neHEF = ak.to_numpy(ak.flatten(X["Jet_neHEF"], axis=1))
+    chEmEF = ak.to_numpy(ak.flatten(X["Jet_chEmEF"], axis=1))
+    neEmEF = ak.to_numpy(ak.flatten(X["Jet_neEmEF"], axis=1))
+    muEF = ak.to_numpy(ak.flatten(X["Jet_muEF"], axis=1))
+    chMult = ak.to_numpy(ak.flatten(X["Jet_chMultiplicity"], axis=1)).astype(np.int32)
+    neMult = ak.to_numpy(ak.flatten(X["Jet_neMultiplicity"], axis=1)).astype(np.int32)
+    mult = chMult + neMult
+
+    jetid_flat = evaluator.evaluate(
+        eta, chHEF, neHEF, chEmEF, neEmEF, muEF, chMult, neMult, mult
+    )
+
+    jetid_flat = np.asarray(jetid_flat) > 0.5
+    return ak.unflatten(jetid_flat, counts)
+
+
+def transform(batch, branch_dict, isData=False):
+    """
+    Preprocess the input data for training or evaluation.
+    
+    Args:
+        
+        
+    Returns:
+        
+    """
+    out_dict = {}
+    X = ak.concatenate(batch, axis=0)
+    
+    # Preprocess will fail if there are no events :(
+    if len(X) == 0: return None
+
+    # some events have no jets → Jet_phi[i] == []
+    jet0_phi = ak.firsts(X['Jet_phi'])
+    jet0_eta = ak.firsts(X['Jet_eta'])
+
+    # turn None into NaN so later torch code doesn't choke
+    jet0_phi = ak.fill_none(jet0_phi, np.nan)
+    jet0_eta = ak.fill_none(jet0_eta, np.nan)
+
+    X['jet0_phi'] = jet0_phi
+    X['jet0_eta'] = jet0_eta
+    
+    jetid_path = '/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/jetid.json.gz'
+    jetid_name = 'AK4PUPPI_TightLeptonVeto'
+    Jet_isTight = get_jetid_2024(X, jetid_path, jetid_name)
+    jet_sel_vetomapsel = (Jet_isTight &
+                         (X['Jet_pt'] > 15) &
+                         ((X['Jet_chEmEF'] + X['Jet_neEmEF']) < 0.9)
+                         )
+    Jet_phi_vetomapsel = X.Jet_phi[jet_sel_vetomapsel]
+    Jet_eta_vetomapsel = X.Jet_eta[jet_sel_vetomapsel]
+
+    # guarantee at least 1 jet per event (dummy NaN jet if none pass selection)
+    Jet_phi_vetomapsel = ak.fill_none(ak.pad_none(Jet_phi_vetomapsel, 1), np.nan)
+    Jet_eta_vetomapsel = ak.fill_none(ak.pad_none(Jet_eta_vetomapsel, 1), np.nan)
+
+
+    X['Jet_phi_vetomapsel'] = Jet_phi_vetomapsel
+    X['Jet_eta_vetomapsel'] = Jet_eta_vetomapsel
+    
+    
+    min_dR, min_dphi, min_deta = hp.calc_dR_deta_dphi(X['SDVSecVtx_L_phi'], X['SDVSecVtx_L_eta'], X['Jet_phi_vetomapsel'], X['Jet_eta_vetomapsel'])
+    X['SDVSecVtx_closestJetdR']   = min_dR
+    
+    branch_dict['sv'].append('SDVSecVtx_closestJetdR')
+
+
+    # padding
+    X = hp.pad_and_fill(X, branch_dict, svDim=12, tkDim=10, fillValue=float("nan"))
+
+    # X['SDVTrack_vtxdR'] = torch.abs(X['SDVTrack_eta'] - X['SDVSecVtx_L_eta'][...,np.newaxis])**2 + \
+    #                       torch.arccos(torch.cos(X['SDVTrack_phi'] - X['SDVSecVtx_L_phi'][...,np.newaxis]))**2
+
+    # ------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------
+    for key in X.keys(): X[key] = X[key].unsqueeze(0)
+
+
+
+
+    out_dict["tk_pair_features"] = torch.cat((X['SDVTrack_px'],
+                                              X['SDVTrack_py'],
+                                              X['SDVTrack_pz'],
+                                              X['SDVTrack_E']), dim=0).permute(1,0,2)
+
+    eps = 1e-4
+
+    out_dict["tk_features"] = torch.cat((
+                                         torch.log(X['SDVTrack_pt']),
+                                         X['SDVTrack_eta'],
+#                                          X['SDVTrack_vtxdR'],
+                                         X['SDVTrack_dxy'] / (X['SDVTrack_dz'] + eps),
+                                         X['SDVTrack_dxy'] / (X['SDVTrack_dxyError'] + eps),
+                                         X['SDVTrack_normalizedChi2'],
+                                         torch.log(eps+ X['SDVTrack_pfRelIso03_all']),
+#                                          X['SDVIdxLUT_TrackWeight'],
+                                         torch.cos(X['SDVSecVtx_L_phi'][...,np.newaxis] - X['SDVTrack_phi']),
+                                         ), dim=0).permute(1,0,2)
+    
+
+    out_dict["tk_mask"] = (~torch.isnan(out_dict["tk_features"][:,0:1,:])).to(torch.bool)   # 1 = normal, 0 = NaN
+
+
+    
+    out_dict["sv_features"] = torch.cat((
+                                         torch.log(X['SDVSecVtx_pt']),
+                                         X['SDVSecVtx_L_eta'],
+                                         torch.log(X['SDVSecVtx_LxySig']),
+                                         X['SDVSecVtx_pAngle'],
+                                         X['SDVSecVtx_charge'],
+                                         X['SDVSecVtx_chi2'] / (X['SDVSecVtx_ndof']),
+                                         X['SDVSecVtx_sum_tkW'] / (X['SDVSecVtx_tracksSize']),
+                                         X['SDVSecVtx_closestJetdR'],
+                                         ), dim=0).permute(1,0)[..., np.newaxis]
+
+    if not isData:
+        out_dict["label"] = X['SDVSecVtx_matchedLLPnDau_bydau'].permute(1,0)
+    
+    torch.nan_to_num(out_dict["tk_pair_features"], nan=-9.9, out=out_dict["tk_pair_features"])
+    torch.nan_to_num(out_dict["tk_features"],      nan=-9.9, out=out_dict["tk_features"])
+    torch.nan_to_num(out_dict["sv_features"],      nan=-9.9, out=out_dict["sv_features"])
+
+
+    return out_dict

@@ -1,0 +1,50 @@
+{
+    "CustomNanoAOD": {
+        "dir": {
+            "zto2nu4jetsht0100_2022":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/zto2nu4jetsht0100_2022",
+            "zto2nu4jetsht0200_2022":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/zto2nu4jetsht0200_2022",
+            "zto2nu4jetsht0400_2022":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/zto2nu4jetsht0400_2022",
+            "zto2nu4jetsht0800_2022":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/zto2nu4jetsht0800_2022",
+            "zto2nu4jetsht1500_2022":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/zto2nu4jetsht1500_2022",
+            "zto2nu4jetsht2500_2022":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/zto2nu4jetsht2500_2022",
+            "wjetstolnu4jets_2022":     "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/wjetstolnu4jets_2022",
+            "qcd4jetsht0040_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht0040_2022",
+            "qcd4jetsht0070_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht0070_2022",
+            "qcd4jetsht0100_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht0100_2022",
+            "qcd4jetsht0200_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht0200_2022",
+            "qcd4jetsht0400_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht0400_2022",
+            "qcd4jetsht0600_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht0600_2022",
+            "qcd4jetsht0800_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht0800_2022",
+            "qcd4jetsht1000_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht1000_2022",
+            "qcd4jetsht1200_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht1200_2022",
+            "qcd4jetsht1500_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht1500_2022",
+            "qcd4jetsht2000_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht2000_2022",
+            "ttto4q_2022":              "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/ttto4q_2022",
+            "ttto2l2nu_2022":           "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/ttto2l2nu_2022",
+            "tttolnu2q_2022":           "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/tttolnu2q_2022",
+
+            "zto2nu4jetsht0100_ee_2022":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/zto2nu4jetsht0100_ee_2022",
+            "zto2nu4jetsht0200_ee_2022":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/zto2nu4jetsht0200_ee_2022",
+            "zto2nu4jetsht0400_ee_2022":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/zto2nu4jetsht0400_ee_2022",
+            "zto2nu4jetsht0800_ee_2022":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/zto2nu4jetsht0800_ee_2022",
+            "zto2nu4jetsht1500_ee_2022":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/zto2nu4jetsht1500_ee_2022",
+            "zto2nu4jetsht2500_ee_2022":   "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/zto2nu4jetsht2500_ee_2022",
+            "wjetstolnu4jets_ee_2022":     "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/wjetstolnu4jets_ee_2022",
+            "qcd4jetsht0040_ee_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht0040_ee_2022",
+            "qcd4jetsht0070_ee_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht0070_ee_2022",
+            "qcd4jetsht0100_ee_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht0100_ee_2022",
+            "qcd4jetsht0200_ee_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht0200_ee_2022",
+            "qcd4jetsht0400_ee_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht0400_ee_2022",
+            "qcd4jetsht0600_ee_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht0600_ee_2022",
+            "qcd4jetsht0800_ee_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht0800_ee_2022",
+            "qcd4jetsht1000_ee_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht1000_ee_2022",
+            "qcd4jetsht1200_ee_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht1200_ee_2022",
+            "qcd4jetsht1500_ee_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht1500_ee_2022",
+            "qcd4jetsht2000_ee_2022":      "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/qcd4jetsht2000_ee_2022",
+            "ttto4q_ee_2022":              "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/ttto4q_ee_2022",
+            "ttto2l2nu_ee_2022":           "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/ttto2l2nu_ee_2022",
+            "tttolnu2q_ee_2022":           "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/MC_22/tttolnu2q_ee_2022"
+        }
+    }
+
+}

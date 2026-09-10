@@ -1,0 +1,24 @@
+{
+    "CustomNanoAOD": {
+        "dir": {
+            "jetmet0_2024c":    "/eos/vbc/experiments/cms/store/user/lian/JetMET0/jetmet0_2024c_nano_v1",
+            "jetmet0_2024d":    "/eos/vbc/experiments/cms/store/user/lian/JetMET0/jetmet0_2024d_nano_v1",
+            "jetmet0_2024e":    "/eos/vbc/experiments/cms/store/user/lian/JetMET0/jetmet0_2024e_nano_v1_supp",
+            "jetmet0_2024f":    "/eos/vbc/experiments/cms/store/user/lian/JetMET0/jetmet0_2024f_nano_v1",
+            "jetmet0_2024g":    "/eos/vbc/experiments/cms/store/user/lian/JetMET0/jetmet0_2024g_nano_v1",
+            "jetmet0_2024h":    "/eos/vbc/experiments/cms/store/user/lian/JetMET0/jetmet0_2024h_nano_v1",
+            "jetmet0_2024i1":   "/eos/vbc/experiments/cms/store/user/lian/JetMET0/jetmet0_2024i1_nano_v1",
+            "jetmet0_2024i2":   "/eos/vbc/experiments/cms/store/user/lian/JetMET0/jetmet0_2024i2_nano_v1",
+
+            "jetmet1_2024c":    "/eos/vbc/experiments/cms/store/user/lian/JetMET1/jetmet1_2024c_nano_v1",
+            "jetmet1_2024d":    "/eos/vbc/experiments/cms/store/user/lian/JetMET1/jetmet1_2024d_nano_v1",
+            "jetmet1_2024e":    "/eos/vbc/experiments/cms/store/user/lian/JetMET1/jetmet1_2024e_nano_v1",
+            "jetmet1_2024f":    "/eos/vbc/experiments/cms/store/user/lian/JetMET1/jetmet1_2024f_nano_v1",
+            "jetmet1_2024g":    "/eos/vbc/experiments/cms/store/user/lian/JetMET1/jetmet1_2024g_nano_v1",
+            "jetmet1_2024h":    "/eos/vbc/experiments/cms/store/user/lian/JetMET1/jetmet1_2024h_nano_v1",
+            "jetmet1_2024i1":   "/eos/vbc/experiments/cms/store/user/lian/JetMET1/jetmet1_2024i1_nano_v1",
+            "jetmet1_2024i2":   "/eos/vbc/experiments/cms/store/user/lian/JetMET1/jetmet1_2024i2_nano_v1"
+        }
+    }
+    
+}

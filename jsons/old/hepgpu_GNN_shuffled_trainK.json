@@ -1,0 +1,7 @@
+{
+    "CustomNanoAOD": {
+        "dir": {
+            "mix": "/scratch/agueven/20260112/GNN_train_shuffled"
+        }
+    }
+}

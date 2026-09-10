@@ -3,9 +3,9 @@
 #SBATCH --output=/scratch-cbe/users/alikaan.gueven/job_outs/job_%j.out 
 #SBATCH --partition=g
 #SBATCH --constraint="g2|g3|g4"
-#SBATCH --qos=g_medium
+#SBATCH --qos=g_short
 #SBATCH --gpus=1
-#SBATCH --time=12:00:00
+#SBATCH --time=06:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=6

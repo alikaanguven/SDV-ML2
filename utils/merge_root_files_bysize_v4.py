@@ -190,7 +190,7 @@ def main(json_path, tree_name, dst_base, chunk_gb):
     with open(json_path) as jf:
         cfg = json.load(jf)
 
-    sample_dirs = cfg["CustomNanoAOD_GNN"]["dir"]  # mapping: key -> input directory
+    sample_dirs = cfg["CustomNanoAOD"]["dir"]  # mapping: key -> input directory
     chunk_bytes = int(chunk_gb * 1024**3)
 
     for sample, src_dir in sorted(sample_dirs.items()):
@@ -244,10 +244,10 @@ def main(json_path, tree_name, dst_base, chunk_gb):
 
 
 if __name__ == "__main__":
-    JSON_PATH = "jsons/CustomNanoAOD_GNN.json"
+    JSON_PATH = "jsons/new/scratch_data24.json"
     TREE_NAME = "Events"
 
-    DST_BASE  = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_nano_data_merged"
+    DST_BASE  = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/IVF_2024_data_merged"
     CHUNK_GB  = 4.0
 
     main(

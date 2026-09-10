@@ -1,0 +1,20 @@
+{
+    "CustomNanoAOD": {
+        "dir": {
+            "jetmet0_2023c1":   "/eos/vbc/experiments/cms/store/user/lian/JetMET0/Run2023C1_JetMET0_nano_v2",
+            "jetmet0_2023c2":   "/eos/vbc/experiments/cms/store/user/lian/JetMET0/Run2023C2_JetMET0_nano_v2",
+            "jetmet0_2023c3":   "/eos/vbc/experiments/cms/store/user/lian/JetMET0/Run2023C3_JetMET0_nano_v2",
+            "jetmet0_2023c4":   "/eos/vbc/experiments/cms/store/user/lian/JetMET0/Run2023C4_JetMET0_nano_v2",
+            "jetmet0_2023d1":   "/eos/vbc/experiments/cms/store/user/lian/JetMET0/Run2023D1_JetMET0_nano_v2",
+            "jetmet0_2023d2":   "/eos/vbc/experiments/cms/store/user/lian/JetMET0/Run2023D2_JetMET0_nano_v2",
+
+            "jetmet1_2023c1":   "/eos/vbc/experiments/cms/store/user/lian/JetMET1/Run2023C1_JetMET1_nano_v2",
+            "jetmet1_2023c2":   "/eos/vbc/experiments/cms/store/user/lian/JetMET1/Run2023C2_JetMET1_nano_v2",
+            "jetmet1_2023c3":   "/eos/vbc/experiments/cms/store/user/lian/JetMET1/Run2023C3_JetMET1_nano_v2",
+            "jetmet1_2023c4":   "/eos/vbc/experiments/cms/store/user/lian/JetMET1/Run2023C4_JetMET1_nano_v2",
+            "jetmet1_2023d1":   "/eos/vbc/experiments/cms/store/user/lian/JetMET1/Run2023D1_JetMET1_nano_v2",
+            "jetmet1_2023d2":   "/eos/vbc/experiments/cms/store/user/lian/JetMET1/Run2023D2_JetMET1_nano_v2"
+        }
+    }
+    
+}

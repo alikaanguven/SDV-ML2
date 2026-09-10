@@ -17,8 +17,16 @@ import ROOT
 
 
 
-SRC_BASE   = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_nano_data"
-DST_BASE   = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_nano_data_merged"
+# SRC_BASE   = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/sig_18"
+# DST_BASE   = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/merged_sig_18"
+
+SRC_BASE   = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/sig_17-18_old_centralprod/"
+DST_BASE   = "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/sig_17-18_old_centralprod_merged"
+
+
+
+
+
 
 CHUNK_GB   = 4.0
 CHUNK_BYTES= int(CHUNK_GB * 1024**3)
@@ -30,7 +38,7 @@ for sample in sorted(os.listdir(SRC_BASE)):
     if not os.path.isdir(src_dir):
         continue
     print(f"Processing sample: {sample}")
-    files = sorted(f for f in glob.glob(os.path.join(src_dir, "*.root"))
+    files = sorted(f for f in glob.glob(os.path.join(src_dir, "**/*.root"), recursive=True)
                    if "merged" not in os.path.basename(f))
     if not files:
         continue # make output dirs

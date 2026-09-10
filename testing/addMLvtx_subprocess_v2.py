@@ -62,10 +62,19 @@ def main():
         f = ROOT.TFile(file_new, 'UPDATE')
         tree = f.Get("Events")
         pred_scores = array('f', int(tree.GetMaximum('nSDVSecVtx'))*[0.])
-        
-
-            
         branch = tree.Branch(PRED_NAME, pred_scores, f"{PRED_NAME}[nSDVSecVtx]/F")
+
+
+        # Make sure that skipping zero-SV events do not cause any issues.
+        n_pred = len(df[file][0])
+        n_expected = sum(int(event.nSDVSecVtx) for event in tree)
+
+        if n_pred != n_expected:
+            raise RuntimeError(
+                f"Prediction length mismatch for {file}: "
+                f"got {n_pred}, expected {n_expected}"
+            )
+
 
         n_read = 0
         for i, event in enumerate(tree):

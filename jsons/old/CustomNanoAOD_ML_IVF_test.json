@@ -1,0 +1,14 @@
+{
+    "CustomNanoAOD": {
+        "dir": {
+            "C1N2ML_M500_485_ct2_2018": "/scratch-cbe/users/ang.li/SoftDV/CLIP_CustomNanoAOD_v3_ML_IVF/C1N2ML_M500_485_ct2_2018/output",
+            "C1N2ML_M500_485_ct20_2018": "/scratch-cbe/users/ang.li/SoftDV/CLIP_CustomNanoAOD_v3_ML_IVF/C1N2ML_M500_485_ct20_2018/output",
+            "C1N2ML_M500_485_ct200_2018": "/scratch-cbe/users/ang.li/SoftDV/CLIP_CustomNanoAOD_v3_ML_IVF/C1N2ML_M500_485_ct200_2018/output",
+            "stopML_M1000_975_ct0p2_2018": "/scratch-cbe/users/ang.li/SoftDV/CLIP_CustomNanoAOD_v3_ML_IVF/stopML_M1000_975_ct0p2_2018/output",
+            "stopML_M1000_980_ct2_2018": "/scratch-cbe/users/ang.li/SoftDV/CLIP_CustomNanoAOD_v3_ML_IVF/stopML_M1000_980_ct2_2018/output",
+            "stopML_M1000_985_ct20_2018": "/scratch-cbe/users/ang.li/SoftDV/CLIP_CustomNanoAOD_v3_ML_IVF/stopML_M1000_985_ct20_2018/output",
+            "stopML_M1000_988_ct200_2018": "/scratch-cbe/users/ang.li/SoftDV/CLIP_CustomNanoAOD_v3_ML_IVF/stopML_M1000_988_ct200_2018/output"
+        },
+        "dataset": {}
+    }
+}

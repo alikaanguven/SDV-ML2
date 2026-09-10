@@ -5,7 +5,7 @@ def parameter_stats(model: nn.Module):
     Return a dictionary with totals for:
       • all parameters  
       • trainable vs. non-trainable  
-      • trainable weights vs. trainable biases
+      • trainable weights vs. trainable biases vs. other trainable parameters
     """
     totals = {
         "total": 0,
@@ -13,6 +13,7 @@ def parameter_stats(model: nn.Module):
         "non_trainable": 0,
         "trainable_weights": 0,
         "trainable_biases": 0,
+        "trainable_other": 0,
     }
 
     for name, param in model.named_parameters():
@@ -21,10 +22,12 @@ def parameter_stats(model: nn.Module):
 
         if param.requires_grad:    # counted in the backward pass
             totals["trainable"] += n
-            if name.endswith(".weight"):
+            if name.endswith("weight"):
                 totals["trainable_weights"] += n
-            elif name.endswith(".bias"):
+            elif name.endswith("bias"):
                 totals["trainable_biases"] += n
+            else:
+                totals["trainable_other"] += n
         else:
             totals["non_trainable"] += n
 

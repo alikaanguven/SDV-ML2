@@ -1,0 +1,60 @@
+{
+    "AOD": {
+        "dataset": {
+            "met2018a" : "/MET/Run2018A-15Feb2022_UL2018-v1/AOD",
+            "met2018b" : "/MET/Run2018B-15Feb2022_UL2018-v1/AOD",
+            "met2018c" : "/MET/Run2018C-15Feb2022_UL2018-v1/AOD",
+            "met2018d" : "/MET/Run2018D-15Feb2022_UL2018-v1/AOD"
+
+        }
+    },
+
+    "CustomMiniAOD": {
+        "logical_dir": {
+            "met2018a" : "/store/user/aguven/MET/Run2018A-15Feb2022_UL2018-v1/",
+            "met2018b" : "/store/user/aguven/MET/Run2018B-15Feb2022/",
+            "met2018c" : "/store/user/aguven/MET/Run2018C-15Feb2022/",
+            "met2018d" : "/store/user/aguven/MET/Run2018D-15Feb2022_UL2018-v1/",
+            "met2018d_rest1" : "/store/user/aguven/MET/met_2018_d_missingfiles_part1/outputs/",
+            "met2018d_rest2" : "/store/user/aguven/MET/met_2018_d_missingfiles_part2/outputs/",
+            "met2018d_rest3" : "/store/user/aguven/MET/met_2018_d_missingfiles_part3/outputs/"
+
+        },
+
+        "dataset": {
+            "met2018a" : "/MET/aguven-Run2018A-15Feb2022_UL2018-v1-dd1ffd5402fcc3f75701653b84d21aa6/USER",
+            "met2018b" : "/MET/aguven-Run2018B-15Feb2022-dd1ffd5402fcc3f75701653b84d21aa6/USER",
+            "met2018c" : "/MET/aguven-Run2018C-15Feb2022-dd1ffd5402fcc3f75701653b84d21aa6/USER",
+            "met2018d" : "/MET/aguven-Run2018D-15Feb2022_UL2018-v1-dd1ffd5402fcc3f75701653b84d21aa6/USER"
+
+        }
+    },
+
+    "CustomNanoAOD": {
+        "logical_dir": {
+            "met2018a" : "/store/user/aguven/MET/Run2018A-15Feb2022_CustomNanoAOD_golden_v1",
+            "met2018b" : "/store/user/aguven/MET/Run2018B-15Feb2022_CustomNanoAOD_golden_v1",
+            "met2018c" : "/store/user/aguven/MET/Run2018C-15Feb2022_CustomNanoAOD_golden_v1",
+            "met2018d" : "/store/user/aguven/MET/Run2018D-15Feb2022_CustomNanoAOD_golden_v1",
+            "met2018d_rest" : "/store/user/aguven/MET/met2018d_rest_golden_nano"
+
+        },
+        "dir": {
+            "met2018a" : "/eos/vbc/experiments/cms/store/user/aguven/MET/Run2018A-15Feb2022_CustomNanoAOD_golden_v1",
+            "met2018b" : "/eos/vbc/experiments/cms/store/user/aguven/MET/Run2018B-15Feb2022_CustomNanoAOD_golden_v1",
+            "met2018c" : "/eos/vbc/experiments/cms/store/user/aguven/MET/Run2018C-15Feb2022_CustomNanoAOD_golden_v1",
+            "met2018d" : "/eos/vbc/experiments/cms/store/user/aguven/MET/Run2018D-15Feb2022_CustomNanoAOD_golden_v1",
+            "met2018d_rest" : "/eos/vbc/experiments/cms/store/user/aguven/MET/met2018d_rest_golden_nano"
+
+        },
+
+        "dataset": {
+            "met2018a" : "/MET/aguven-Run2018A-15Feb2022_CustomNanoAOD_golden_v1-00000000000000000000000000000000/USER",
+            "met2018b" : "/MET/aguven-Run2018B-15Feb2022_CustomNanoAOD_golden_v1-00000000000000000000000000000000/USER",
+            "met2018c" : "/MET/aguven-Run2018C-15Feb2022_CustomNanoAOD_golden_v1-00000000000000000000000000000000/USER",
+            "met2018d" : "/MET/aguven-Run2018D-15Feb2022_CustomNanoAOD_golden_v1-00000000000000000000000000000000/USER"
+
+        }
+    }
+    
+}

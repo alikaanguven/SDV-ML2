@@ -14,22 +14,24 @@ if str(PROJECT_DIR) not in sys.path: sys.path.insert(0, str(PROJECT_DIR))
 
 # Get sample names from JSON file
 # -----------------------------------
-# JSON_PATH = '/users/alikaan.gueven/AngPlotter/new_CMSSW/CMSSW_13_3_0/src/SoftDisplacedVertices/Samples/json/MC_RunIISummer20UL18.json'
-JSON_PATH = '/users/alikaan.gueven/AOD_to_nanoAOD/CMSSW_13_0_16/src/SoftDisplacedVertices/Samples/json/MLNano.json'
+JSON_PATH = 'jsons/new/scratch_central_C1N2_Run3.json' # 'jsons/new/scratch_mu17.json'
 with open(JSON_PATH) as f:
     x = json.load(f)
 samples = x['CustomNanoAOD']['dir'].keys()
 
 
 PREDICT_SCRIPT = os.path.join(PROJECT_DIR, 'testing/vtxFramework_predict.py')
-MODEL_PATH     = '/groups/hephy/cms/alikaan.gueven/ParT/models/vtx_PART-473best_valloss_epoch.pt'
-# INPUT_BASEDIR  = '/scratch-cbe/users/alikaan.gueven/ML_KAAN/run2'
-INPUT_BASEDIR  = '/scratch-cbe/users/alikaan.gueven/ML_KAAN/Ang_GNN_nano_merged'
+MODEL_PATH     = '/groups/hephy/cms/alikaan.gueven/ParT/models/vtx_PART-1111best_valloss_epoch.pt'
+INPUT_BASEDIR  = '/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/c1n2_run3' # '/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/muon17'
 job_dict = {}
 
 
 for sample in samples:
-    # if sample != 'stop_M600_588_ct200_2018': continue  # Skip everything except this sample
+    
+    year = str(sample.split('_')[-1]) # if sample != 'isomu2017f': continue  # Skip everything except this sample
+    if year == '2024': continue
+    if sample != 'C1N2_M700_680_20p0_2022EE': continue
+    
     print("Starting sample: ", sample)
     INPUT_DIR = os.path.join(INPUT_BASEDIR, sample) # e.g. sample='zjetstonunuht0800_2017'
 

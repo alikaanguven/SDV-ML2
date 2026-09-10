@@ -1,0 +1,62 @@
+{
+    "AOD": {
+        "datasets" : {
+            "isomu2017b" : "/SingleMuon/Run2017B-15Feb2022_UL2017-v1/AOD",
+            "isomu2017c" : "/SingleMuon/Run2017C-15Feb2022_UL2017-v1/AOD",
+            "isomu2017d" : "/SingleMuon/Run2017D-15Feb2022_UL2017-v1/AOD",
+            "isomu2017e" : "/SingleMuon/Run2017E-15Feb2022_UL2017-v1/AOD",
+            "isomu2017f" : "/SingleMuon/Run2017F-15Feb2022_UL2017-v1/AOD"
+        }
+    },
+
+    "CustomMiniAOD": {
+        "datasets" : {
+            "isomu2017b" : "/SingleMuon/wuzh-Run2017B_mini_v1-2142cdb35f30b0ac2836fe948825a36c/USER",
+            "isomu2017c" : "/SingleMuon/wuzh-Run2017C_mini_v1-2142cdb35f30b0ac2836fe948825a36c/USER",
+            "isomu2017d" : "/SingleMuon/wuzh-Run2017D_mini_v1-2142cdb35f30b0ac2836fe948825a36c/USER",
+            "isomu2017e" : "/SingleMuon/wuzh-Run2017E_mini_v1-2142cdb35f30b0ac2836fe948825a36c/USER",
+            "isomu2017f" : "/SingleMuon/wuzh-Run2017F_mini_v1-2142cdb35f30b0ac2836fe948825a36c/USER"
+        },
+        "dir": {
+            "isomu2017b" : "/eos/vbc/experiments/cms/store/user/wuzh/SingleMuon/Run2017B_mini_v1",
+            "isomu2017c" : "/eos/vbc/experiments/cms/store/user/wuzh/SingleMuon/Run2017C_mini_v1",
+            "isomu2017d" : "/eos/vbc/experiments/cms/store/user/wuzh/SingleMuon/Run2017D_mini_v1",
+            "isomu2017e" : "/eos/vbc/experiments/cms/store/user/wuzh/SingleMuon/Run2017E_mini_v1",
+            "isomu2017f" : "/eos/vbc/experiments/cms/store/user/wuzh/SingleMuon/Run2017F_mini_v1"
+        },
+        "logical_dir": {
+            "isomu2017b" : "/store/user/wuzh/SingleMuon/Run2017B_mini_v1",
+            "isomu2017c" : "/store/user/wuzh/SingleMuon/Run2017C_mini_v1",
+            "isomu2017d" : "/store/user/wuzh/SingleMuon/Run2017D_mini_v1",
+            "isomu2017e" : "/store/user/wuzh/SingleMuon/Run2017E_mini_v1",
+            "isomu2017f" : "/store/user/wuzh/SingleMuon/Run2017F_mini_v1"
+        }
+    },
+
+    "CustomNanoAOD": {
+        "dataset": {
+            "isomu2017b" : "/SingleMuon/wuzh-Run2017B_nano_v1-00000000000000000000000000000000/USER",
+            "isomu2017c" : "/SingleMuon/wuzh-Run2017C_nano_v1-00000000000000000000000000000000/USER",
+            "isomu2017d" : "/SingleMuon/wuzh-Run2017D_nano_v1-00000000000000000000000000000000/USER",
+            "isomu2017e" : "/SingleMuon/wuzh-Run2017E_nano_v1-00000000000000000000000000000000/USER",
+            "isomu2017f" : "/SingleMuon/wuzh-Run2017F_nano_v1-00000000000000000000000000000000/USER"
+        },
+
+        "dir": {
+            "isomu2017b" : "/eos/vbc/experiments/cms/store/user/wuzh/SingleMuon/Run2017B_nano_v1",
+            "isomu2017c" : "/eos/vbc/experiments/cms/store/user/wuzh/SingleMuon/Run2017C_nano_v1",
+            "isomu2017d" : "/eos/vbc/experiments/cms/store/user/wuzh/SingleMuon/Run2017D_nano_v1",
+            "isomu2017e" : "/eos/vbc/experiments/cms/store/user/wuzh/SingleMuon/Run2017E_nano_v1",
+            "isomu2017f" : "/eos/vbc/experiments/cms/store/user/wuzh/SingleMuon/Run2017F_nano_v1"
+                },
+
+        "logical_dir": {
+            "isomu2017b" : "/store/user/wuzh/SingleMuon/Run2017B_nano_v1",
+            "isomu2017c" : "/store/user/wuzh/SingleMuon/Run2017C_nano_v1",
+            "isomu2017d" : "/store/user/wuzh/SingleMuon/Run2017D_nano_v1",
+            "isomu2017e" : "/store/user/wuzh/SingleMuon/Run2017E_nano_v1",
+            "isomu2017f" : "/store/user/wuzh/SingleMuon/Run2017F_nano_v1"
+                }
+        
+    }
+}

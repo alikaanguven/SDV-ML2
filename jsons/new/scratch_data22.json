@@ -1,0 +1,11 @@
+{
+    "CustomNanoAOD": {
+        "dir": {
+            "jetmet_2022c":     "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_22/jetmet_2022c",
+            "jetmet_2022d":     "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_22/jetmet_2022d",
+            "jetmet_2022e":     "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_22/jetmet_2022e",
+            "jetmet_2022f":     "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_22/jetmet_2022f",
+            "jetmet_2022g":     "/scratch-cbe/users/alikaan.gueven/ML_KAAN/20260112/data_22/jetmet_2022g"
+        }
+    }
+}

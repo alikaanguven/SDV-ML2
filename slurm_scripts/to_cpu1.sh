@@ -7,7 +7,7 @@
 #SBATCH --output=/scratch-cbe/users/alikaan.gueven/job_outs/job_%j.out 
 #SBATCH --ntasks 1 
 #SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=4G 
+#SBATCH --mem-per-cpu=16G 
 #SBATCH --nodes=1-1 
 #SBATCH --partition=c
 #SBATCH --qos=c_short
